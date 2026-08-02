@@ -1,0 +1,1173 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>茨城司法書士会調停センター｜書類管理システム</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@300;400;600&family=Noto+Sans+JP:wght@300;400;500&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<style>
+  :root {
+    --ink: #1a1714;
+    --paper: #f5f0e8;
+    --paper-mid: #ede7d9;
+    --paper-dark: #d9cfba;
+    --accent: #8b4513;
+    --accent-light: #c4793a;
+    --accent-pale: #f0e4d4;
+    --stage-1: #4a6741;
+    --stage-2: #3d5a80;
+    --stage-3: #7a5c8a;
+    --stage-4: #8b4513;
+    --stage-5: #2d6a4f;
+    --muted: #7a7065;
+    --border: #c8bfaa;
+    --green: #2d6a4f;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Noto Sans JP', sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+    min-height: 100vh;
+    font-weight: 300;
+  }
+
+  /* ── LOGIN SCREEN ── */
+  #loginScreen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    background: var(--ink);
+    color: var(--paper);
+  }
+
+  .login-box {
+    text-align: center;
+    padding: 3rem;
+    border: 1px solid #333;
+    max-width: 380px;
+    width: 90%;
+  }
+
+  .login-title {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 1.1rem;
+    font-weight: 300;
+    letter-spacing: 0.15em;
+    margin-bottom: 0.5rem;
+  }
+
+  .login-sub {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    color: #666;
+    margin-bottom: 2.5rem;
+    letter-spacing: 0.1em;
+  }
+
+  .login-divider {
+    border: none;
+    border-top: 1px solid #333;
+    margin: 2rem 0;
+  }
+
+  .login-note {
+    font-size: 0.72rem;
+    color: #666;
+    line-height: 1.6;
+    font-family: 'DM Mono', monospace;
+  }
+
+  /* ── HEADER ── */
+  header {
+    background: var(--ink);
+    color: var(--paper);
+    padding: 0 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 56px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .header-title {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 0.95rem;
+    font-weight: 300;
+    letter-spacing: 0.15em;
+  }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .user-badge {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    color: #888;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .user-avatar {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+
+  .drive-status {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    padding: 0.2rem 0.6rem;
+    border-radius: 2px;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+  }
+
+  .drive-status.connected { background: rgba(45,106,79,0.3); color: #7ecfaa; }
+  .drive-status.disconnected { background: rgba(139,69,19,0.3); color: #e8a87c; }
+
+  .drive-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: currentColor;
+  }
+
+  /* ── LAYOUT ── */
+  .app {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    min-height: calc(100vh - 56px);
+  }
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    background: var(--ink);
+    color: var(--paper);
+    padding: 1.5rem 0;
+    border-right: 1px solid #333;
+  }
+
+  .sidebar-section { margin-bottom: 2rem; }
+
+  .sidebar-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    color: #666;
+    padding: 0 1.5rem;
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+  }
+
+  .case-item {
+    padding: 0.75rem 1.5rem;
+    cursor: pointer;
+    transition: background 0.15s;
+    border-left: 3px solid transparent;
+  }
+
+  .case-item:hover { background: rgba(255,255,255,0.05); }
+  .case-item.active {
+    background: rgba(255,255,255,0.08);
+    border-left-color: var(--accent-light);
+  }
+
+  .case-id {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    color: #888;
+  }
+
+  .case-name { font-size: 0.85rem; margin-top: 0.2rem; color: var(--paper); }
+
+  .case-stage {
+    display: inline-block;
+    font-size: 0.65rem;
+    padding: 0.15rem 0.5rem;
+    border-radius: 2px;
+    margin-top: 0.3rem;
+    font-family: 'DM Mono', monospace;
+  }
+
+  .stage-受付 { background: #4a6741; color: #fff; }
+  .stage-審査 { background: #3d5a80; color: #fff; }
+  .stage-期日 { background: #7a5c8a; color: #fff; }
+  .stage-合意書 { background: #8b4513; color: #fff; }
+  .stage-終了 { background: #2d6a4f; color: #fff; }
+
+  .new-case-btn {
+    margin: 0 1.5rem;
+    padding: 0.6rem 1rem;
+    background: transparent;
+    border: 1px solid #444;
+    color: var(--paper);
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 0.8rem;
+    cursor: pointer;
+    width: calc(100% - 3rem);
+    text-align: left;
+    transition: border-color 0.15s, background 0.15s;
+    letter-spacing: 0.05em;
+  }
+  .new-case-btn:hover { border-color: var(--accent-light); background: rgba(196,121,58,0.1); }
+
+  /* ── Drive BUTTONS in sidebar ── */
+  .drive-btn-group {
+    padding: 0 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+
+  .drive-btn {
+    padding: 0.5rem 0.75rem;
+    background: transparent;
+    border: 1px solid #444;
+    color: #aaa;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.72rem;
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.15s;
+    border-radius: 2px;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .drive-btn:hover { border-color: #7ecfaa; color: #7ecfaa; }
+  .drive-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+  /* ── MAIN ── */
+  .main { display: flex; flex-direction: column; }
+
+  /* ── PROGRESS BAR ── */
+  .progress-bar {
+    background: var(--paper-mid);
+    border-bottom: 1px solid var(--border);
+    padding: 1rem 2rem;
+    display: flex;
+    gap: 0;
+    align-items: center;
+  }
+
+  .progress-step {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    flex: 1;
+    cursor: pointer;
+  }
+
+  .step-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.3rem;
+    flex: 1;
+    padding: 0.5rem;
+    transition: opacity 0.2s;
+  }
+
+  .step-content:hover { opacity: 0.8; }
+
+  .step-num {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 2px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.75rem;
+    background: var(--paper);
+    color: var(--muted);
+    transition: all 0.2s;
+  }
+
+  .step-label {
+    font-size: 0.7rem;
+    color: var(--muted);
+    white-space: nowrap;
+    font-family: 'Noto Serif JP', serif;
+  }
+
+  .progress-step.done .step-num { background: var(--stage-5); border-color: var(--stage-5); color: white; }
+  .progress-step.active .step-num { background: var(--accent); border-color: var(--accent); color: white; }
+  .progress-step.active .step-label { color: var(--accent); font-weight: 500; }
+  .step-connector { flex: 0 0 24px; height: 1px; background: var(--border); }
+
+  /* ── CONTENT ── */
+  .content { flex: 1; padding: 2rem; overflow-y: auto; }
+
+  .section-heading {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 1.1rem;
+    font-weight: 400;
+    color: var(--ink);
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .stage-badge {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    padding: 0.2rem 0.6rem;
+    border-radius: 2px;
+    background: var(--accent);
+    color: white;
+    letter-spacing: 0.05em;
+  }
+
+  /* ── FORM ── */
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem 1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .form-group { display: flex; flex-direction: column; gap: 0.4rem; }
+  .form-group.full { grid-column: 1 / -1; }
+
+  label {
+    font-size: 0.72rem;
+    color: var(--muted);
+    letter-spacing: 0.05em;
+    font-family: 'DM Mono', monospace;
+  }
+
+  input, select, textarea {
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--border);
+    background: white;
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 0.85rem;
+    color: var(--ink);
+    outline: none;
+    transition: border-color 0.15s;
+    border-radius: 2px;
+    font-weight: 300;
+  }
+
+  input:focus, select:focus, textarea:focus { border-color: var(--accent); }
+  textarea { resize: vertical; min-height: 80px; }
+
+  /* ── DOC PANEL ── */
+  .doc-panel {
+    background: var(--paper-mid);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .doc-panel-title {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 0.85rem;
+    color: var(--muted);
+    margin-bottom: 1rem;
+    letter-spacing: 0.1em;
+  }
+
+  .doc-list { display: flex; flex-direction: column; gap: 0.5rem; }
+
+  .doc-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: white;
+    border: 1px solid var(--border);
+    padding: 0.6rem 1rem;
+    border-radius: 2px;
+    transition: border-color 0.15s;
+  }
+
+  .doc-item:hover { border-color: var(--accent-light); }
+
+  .doc-info { display: flex; flex-direction: column; gap: 0.15rem; }
+  .doc-name { font-size: 0.82rem; color: var(--ink); }
+  .doc-desc { font-size: 0.7rem; color: var(--muted); font-family: 'DM Mono', monospace; }
+
+  .doc-actions { display: flex; gap: 0.4rem; }
+
+  .btn-dl {
+    padding: 0.3rem 0.8rem;
+    font-size: 0.72rem;
+    font-family: 'DM Mono', monospace;
+    border: 1px solid var(--border);
+    background: white;
+    cursor: pointer;
+    color: var(--ink);
+    letter-spacing: 0.05em;
+    transition: all 0.15s;
+    border-radius: 2px;
+  }
+
+  .btn-dl:hover { background: var(--accent-pale); border-color: var(--accent-light); }
+  .btn-dl.pdf { border-color: #c0392b; color: #c0392b; }
+  .btn-dl.pdf:hover { background: #fff0ee; }
+  .btn-dl.docx { border-color: #2980b9; color: #2980b9; }
+  .btn-dl.docx:hover { background: #eef5ff; }
+
+  /* ── ACTION ROW ── */
+  .action-row {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: flex-end;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border);
+  }
+
+  .btn-primary {
+    padding: 0.6rem 1.5rem;
+    background: var(--accent);
+    color: white;
+    border: none;
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 0.82rem;
+    cursor: pointer;
+    transition: background 0.15s;
+    letter-spacing: 0.05em;
+    border-radius: 2px;
+  }
+  .btn-primary:hover { background: var(--accent-light); }
+
+  .btn-secondary {
+    padding: 0.6rem 1.5rem;
+    background: transparent;
+    color: var(--ink);
+    border: 1px solid var(--border);
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 0.82rem;
+    cursor: pointer;
+    transition: all 0.15s;
+    border-radius: 2px;
+  }
+  .btn-secondary:hover { border-color: var(--ink); }
+
+  /* ── SAVE TO DRIVE BTN ── */
+  .btn-drive-save {
+    padding: 0.6rem 1.5rem;
+    background: rgba(45,106,79,0.1);
+    color: var(--green);
+    border: 1px solid var(--green);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: all 0.15s;
+    border-radius: 2px;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .btn-drive-save:hover { background: rgba(45,106,79,0.2); }
+
+  /* ── KIJITSU ── */
+  .kijitsu-list { display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1rem; }
+
+  .kijitsu-card {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    padding: 1rem 1.25rem;
+    position: relative;
+  }
+
+  .kijitsu-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--muted);
+    position: absolute;
+    top: 0.75rem;
+    right: 1rem;
+  }
+
+  .add-kijitsu {
+    padding: 0.5rem;
+    border: 1px dashed var(--border);
+    background: transparent;
+    width: 100%;
+    font-size: 0.8rem;
+    color: var(--muted);
+    cursor: pointer;
+    font-family: 'Noto Sans JP', sans-serif;
+    transition: all 0.15s;
+    border-radius: 2px;
+    margin-bottom: 1.5rem;
+  }
+  .add-kijitsu:hover { border-color: var(--accent-light); color: var(--accent); }
+
+  /* ── STATUS ── */
+  .status-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+    font-size: 0.75rem;
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+  }
+
+  .status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--stage-5); }
+
+  /* ── MODAL ── */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(26,23,20,0.7);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+
+  .modal {
+    background: var(--paper);
+    padding: 2rem;
+    width: 480px;
+    max-width: 90vw;
+    border: 1px solid var(--border);
+    border-radius: 2px;
+  }
+
+  .modal-title {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 1rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .modal-actions { display: flex; gap: 0.5rem; justify-content: flex-end; margin-top: 1.5rem; }
+
+  /* ── TOAST ── */
+  .toast {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    background: var(--ink);
+    color: white;
+    padding: 0.75rem 1.25rem;
+    font-size: 0.8rem;
+    font-family: 'DM Mono', monospace;
+    border-radius: 2px;
+    opacity: 0;
+    transform: translateY(8px);
+    transition: all 0.3s;
+    z-index: 300;
+    pointer-events: none;
+    max-width: 320px;
+  }
+  .toast.show { opacity: 1; transform: translateY(0); }
+  .toast.success { background: var(--green); }
+  .toast.error { background: #c0392b; }
+
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); }
+</style>
+</head>
+<body>
+
+<!-- LOGIN SCREEN -->
+<div id="loginScreen">
+  <div class="login-box">
+    <div class="login-title">茨城司法書士会調停センター</div>
+    <div class="login-sub">書類管理システム</div>
+    <div id="googleSignInBtn"></div>
+    <hr class="login-divider">
+    <div class="login-note">メンバー（8名）のGoogleアカウントでログインしてください</div>
+  </div>
+</div>
+
+<!-- MAIN APP (hidden until login) -->
+<div id="mainApp" style="display:none;">
+
+<header>
+  <div class="header-title">茨城司法書士会調停センター｜書類管理システム</div>
+  <div class="header-right">
+    <div class="drive-status" id="driveStatus">
+      <div class="drive-dot"></div>
+      <span>Drive未接続</span>
+    </div>
+    <div class="user-badge" id="userBadge"></div>
+  </div>
+</header>
+
+<div class="app">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-label">案件一覧</div>
+      <div id="caseList">
+        <div class="case-item active" onclick="selectCase(0)">
+          <div class="case-id">2024-001</div>
+          <div class="case-name">山田 太郎 / 鈴木 花子</div>
+          <span class="case-stage stage-期日">期日</span>
+        </div>
+        <div class="case-item" onclick="selectCase(1)">
+          <div class="case-id">2024-002</div>
+          <div class="case-name">佐藤 一郎 / 田中 良子</div>
+          <span class="case-stage stage-審査">審査</span>
+        </div>
+        <div class="case-item" onclick="selectCase(2)">
+          <div class="case-id">2024-003</div>
+          <div class="case-name">渡辺 健 / 伊藤 幸子</div>
+          <span class="case-stage stage-合意書">合意書</span>
+        </div>
+      </div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">操作</div>
+      <button class="new-case-btn" onclick="openNewCase()">＋ 新規案件を作成</button>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">Google Drive</div>
+      <div class="drive-btn-group">
+        <button class="drive-btn" id="btnSaveDrive" onclick="saveToDrive()" disabled>
+          ↑ &nbsp;Driveに保存
+        </button>
+        <button class="drive-btn" id="btnLoadDrive" onclick="loadFromDrive()" disabled>
+          ↓ &nbsp;Driveから読み込み
+        </button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+    <div class="progress-bar">
+      <div class="progress-step done" onclick="setStage(0)">
+        <div class="step-content">
+          <div class="step-num">✓</div>
+          <div class="step-label">受付</div>
+        </div>
+      </div>
+      <div class="step-connector"></div>
+      <div class="progress-step done" onclick="setStage(1)">
+        <div class="step-content">
+          <div class="step-num">✓</div>
+          <div class="step-label">審査</div>
+        </div>
+      </div>
+      <div class="step-connector"></div>
+      <div class="progress-step active" onclick="setStage(2)">
+        <div class="step-content">
+          <div class="step-num">3</div>
+          <div class="step-label">期日</div>
+        </div>
+      </div>
+      <div class="step-connector"></div>
+      <div class="progress-step" onclick="setStage(3)">
+        <div class="step-content">
+          <div class="step-num">4</div>
+          <div class="step-label">合意書</div>
+        </div>
+      </div>
+      <div class="step-connector"></div>
+      <div class="progress-step" onclick="setStage(4)">
+        <div class="step-content">
+          <div class="step-num">5</div>
+          <div class="step-label">終了</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="content" id="contentArea"></div>
+  </main>
+</div>
+
+</div><!-- /mainApp -->
+
+<!-- NEW CASE MODAL -->
+<div class="modal-overlay" id="newCaseModal">
+  <div class="modal">
+    <div class="modal-title">新規案件の作成</div>
+    <div class="form-grid">
+      <div class="form-group full">
+        <label>案件番号（自動採番）</label>
+        <input type="text" value="2024-004" readonly style="background:#f5f0e8; color:#888;">
+      </div>
+      <div class="form-group">
+        <label>申立人 氏名</label>
+        <input type="text" id="newMoshitate" placeholder="山田 太郎">
+      </div>
+      <div class="form-group">
+        <label>相手方 氏名</label>
+        <input type="text" id="newAitegata" placeholder="鈴木 花子">
+      </div>
+      <div class="form-group full">
+        <label>事件の概要</label>
+        <textarea id="newGaiyou" placeholder="事件の概要を入力してください"></textarea>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeModal()">キャンセル</button>
+      <button class="btn-primary" onclick="createCase()">作成する</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── CONFIG ──
+const CLIENT_ID = '21521310529-5iv71stbomqitmoje48dthiigfqqthl2.apps.googleusercontent.com';
+const SCOPES = 'https://www.googleapis.com/auth/drive.file';
+const FOLDER_NAME = '茨城調停センター_案件データ';
+
+// ── STATE ──
+let accessToken = null;
+let currentUser = null;
+let currentStage = 2;
+let currentCaseIdx = 0;
+let driveFolderId = null;
+
+const cases = [
+  { id: '2024-001', moshitate: '山田 太郎', aitegata: '鈴木 花子', stage: 2, gaiyou: '不動産の共有持分に関する紛争。' },
+  { id: '2024-002', moshitate: '佐藤 一郎', aitegata: '田中 良子', stage: 1, gaiyou: '金銭消費貸借に関する紛争。' },
+  { id: '2024-003', moshitate: '渡辺 健',   aitegata: '伊藤 幸子', stage: 3, gaiyou: '遺産分割に関する紛争。' },
+];
+
+const stageNames = ['受付', '審査', '期日', '合意書', '終了'];
+
+const stageDocs = {
+  0: [
+    { name: '調停申立書',   desc: '受付時・申立人記載用' },
+    { name: '受理通知書',   desc: '申立人・相手方への通知' },
+    { name: '事件概要票',   desc: '内部管理用' },
+  ],
+  1: [
+    { name: '審査チェックリスト', desc: '事案審査用' },
+    { name: '審査結果通知書',     desc: '受理可否の通知' },
+    { name: '調停人選任書',       desc: '調停人指定用' },
+  ],
+  2: [
+    { name: '期日通知書',   desc: '各当事者への送付' },
+    { name: '期日調書',     desc: '各回期日の記録' },
+    { name: '当事者確認票', desc: '本人確認用' },
+  ],
+  3: [
+    { name: '調停合意書（案）', desc: '合意内容のドラフト' },
+    { name: '調停合意書',       desc: '正本・当事者署名用' },
+    { name: '合意書謄本',       desc: '各当事者保管用' },
+  ],
+  4: [
+    { name: '終了通知書',   desc: '当事者への送付' },
+    { name: '事件終了票',   desc: '内部記録・アーカイブ' },
+  ],
+};
+
+// ── GOOGLE SIGN IN ──
+window.onload = function() {
+  google.accounts.id.initialize({
+    client_id: CLIENT_ID,
+    callback: handleCredentialResponse,
+  });
+  google.accounts.id.renderButton(
+    document.getElementById('googleSignInBtn'),
+    { theme: 'filled_black', size: 'large', text: 'signin_with', locale: 'ja' }
+  );
+};
+
+function handleCredentialResponse(response) {
+  const payload = parseJwt(response.credential);
+  currentUser = payload;
+
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('mainApp').style.display = 'block';
+
+  document.getElementById('userBadge').innerHTML = `
+    <img class="user-avatar" src="${payload.picture}" alt="">
+    ${payload.name}
+  `;
+
+  // Drive用トークン取得
+  const tokenClient = google.accounts.oauth2.initTokenClient({
+    client_id: CLIENT_ID,
+    scope: SCOPES,
+    callback: (tokenResponse) => {
+      if (tokenResponse.access_token) {
+        accessToken = tokenResponse.access_token;
+        updateDriveStatus(true);
+        document.getElementById('btnSaveDrive').disabled = false;
+        document.getElementById('btnLoadDrive').disabled = false;
+        ensureDriveFolder();
+      }
+    },
+  });
+  tokenClient.requestAccessToken({ prompt: '' });
+
+  renderContent();
+}
+
+function parseJwt(token) {
+  const base64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+  return JSON.parse(decodeURIComponent(atob(base64).split('').map(c =>
+    '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join('')));
+}
+
+function updateDriveStatus(connected) {
+  const el = document.getElementById('driveStatus');
+  if (connected) {
+    el.className = 'drive-status connected';
+    el.innerHTML = '<div class="drive-dot"></div><span>Drive接続済み</span>';
+  } else {
+    el.className = 'drive-status disconnected';
+    el.innerHTML = '<div class="drive-dot"></div><span>Drive未接続</span>';
+  }
+}
+
+// ── DRIVE FOLDER ──
+async function ensureDriveFolder() {
+  const res = await fetch(
+    `https://www.googleapis.com/drive/v3/files?q=name='${FOLDER_NAME}' and mimeType='application/vnd.google-apps.folder' and trashed=false`,
+    { headers: { Authorization: `Bearer ${accessToken}` } }
+  );
+  const data = await res.json();
+  if (data.files && data.files.length > 0) {
+    driveFolderId = data.files[0].id;
+  } else {
+    const createRes = await fetch('https://www.googleapis.com/drive/v3/files', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        name: FOLDER_NAME,
+        mimeType: 'application/vnd.google-apps.folder',
+      }),
+    });
+    const folder = await createRes.json();
+    driveFolderId = folder.id;
+  }
+}
+
+// ── SAVE TO DRIVE ──
+async function saveToDrive() {
+  if (!accessToken) { showToast('Driveに接続されていません', 'error'); return; }
+
+  const caseData = cases[currentCaseIdx];
+  const fileName = `${caseData.id}_${caseData.moshitate}.json`;
+  const content = JSON.stringify({ ...caseData, savedAt: new Date().toISOString(), savedBy: currentUser.name }, null, 2);
+
+  showToast('Driveに保存中…');
+
+  try {
+    // 既存ファイルを検索
+    const searchRes = await fetch(
+      `https://www.googleapis.com/drive/v3/files?q=name='${fileName}' and '${driveFolderId}' in parents and trashed=false`,
+      { headers: { Authorization: `Bearer ${accessToken}` } }
+    );
+    const searchData = await searchRes.json();
+
+    let res;
+    if (searchData.files && searchData.files.length > 0) {
+      // 上書き更新
+      const fileId = searchData.files[0].id;
+      res = await fetch(`https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=media`, {
+        method: 'PATCH',
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: content,
+      });
+    } else {
+      // 新規作成
+      const metadata = { name: fileName, parents: [driveFolderId] };
+      const form = new FormData();
+      form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
+      form.append('file', new Blob([content], { type: 'application/json' }));
+      res = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${accessToken}` },
+        body: form,
+      });
+    }
+
+    if (res.ok) {
+      showToast(`✓ ${fileName} をDriveに保存しました`, 'success');
+    } else {
+      showToast('保存に失敗しました', 'error');
+    }
+  } catch (e) {
+    showToast('エラーが発生しました: ' + e.message, 'error');
+  }
+}
+
+// ── LOAD FROM DRIVE ──
+async function loadFromDrive() {
+  if (!accessToken) { showToast('Driveに接続されていません', 'error'); return; }
+  if (!driveFolderId) { showToast('フォルダを確認中です…'); return; }
+
+  showToast('Driveから案件一覧を取得中…');
+
+  try {
+    const res = await fetch(
+      `https://www.googleapis.com/drive/v3/files?q='${driveFolderId}' in parents and trashed=false&orderBy=modifiedTime desc`,
+      { headers: { Authorization: `Bearer ${accessToken}` } }
+    );
+    const data = await res.json();
+
+    if (!data.files || data.files.length === 0) {
+      showToast('Driveに保存された案件がありません', 'error');
+      return;
+    }
+
+    // 最新ファイルを自動読み込み（簡易版）
+    const latest = data.files[0];
+    const fileRes = await fetch(
+      `https://www.googleapis.com/drive/v3/files/${latest.id}?alt=media`,
+      { headers: { Authorization: `Bearer ${accessToken}` } }
+    );
+    const caseData = await fileRes.json();
+
+    // 案件データを更新
+    const idx = cases.findIndex(c => c.id === caseData.id);
+    if (idx >= 0) {
+      cases[idx] = caseData;
+      currentCaseIdx = idx;
+      currentStage = caseData.stage;
+    } else {
+      cases.push(caseData);
+      currentCaseIdx = cases.length - 1;
+      currentStage = caseData.stage;
+    }
+
+    renderSidebar();
+    renderContent();
+    showToast(`✓ ${latest.name} を読み込みました`, 'success');
+  } catch (e) {
+    showToast('読み込みに失敗しました: ' + e.message, 'error');
+  }
+}
+
+// ── RENDER ──
+function renderSidebar() {
+  const stageClasses = ['受付','審査','期日','合意書','終了'];
+  document.getElementById('caseList').innerHTML = cases.map((c, i) => `
+    <div class="case-item ${i === currentCaseIdx ? 'active' : ''}" onclick="selectCase(${i})">
+      <div class="case-id">${c.id}</div>
+      <div class="case-name">${c.moshitate} / ${c.aitegata}</div>
+      <span class="case-stage stage-${stageClasses[c.stage]}">${stageClasses[c.stage]}</span>
+    </div>
+  `).join('');
+}
+
+function renderContent() {
+  const renders = [renderUketsuke, renderShinsa, renderKijitsu, renderGoui, renderShuryo];
+  document.getElementById('contentArea').innerHTML = renders[currentStage]();
+  updateProgress();
+}
+
+function updateProgress() {
+  document.querySelectorAll('.progress-step').forEach((el, i) => {
+    el.classList.remove('done', 'active');
+    const num = el.querySelector('.step-num');
+    if (i < currentStage) { el.classList.add('done'); num.textContent = '✓'; }
+    else if (i === currentStage) { el.classList.add('active'); num.textContent = i + 1; }
+    else { num.textContent = i + 1; }
+  });
+}
+
+function setStage(i) { currentStage = i; renderContent(); }
+
+function selectCase(i) {
+  currentCaseIdx = i;
+  currentStage = cases[i].stage;
+  renderSidebar();
+  renderContent();
+}
+
+// ── STAGE RENDERS ──
+function renderDocPanel(stageIdx) {
+  const items = stageDocs[stageIdx].map(d => `
+    <div class="doc-item">
+      <div class="doc-info">
+        <div class="doc-name">${d.name}</div>
+        <div class="doc-desc">${d.desc}</div>
+      </div>
+      <div class="doc-actions">
+        <button class="btn-dl docx" onclick="showToast('${d.name}.docx をダウンロードします')">Word</button>
+        <button class="btn-dl pdf"  onclick="showToast('${d.name}.pdf をダウンロードします')">PDF</button>
+      </div>
+    </div>
+  `).join('');
+  return `<div class="doc-panel"><div class="doc-panel-title">このステージの書類</div><div class="doc-list">${items}</div></div>`;
+}
+
+function renderUketsuke() {
+  const c = cases[currentCaseIdx];
+  return `
+    <div class="section-heading"><span>受付</span><span class="stage-badge">STAGE 01</span></div>
+    <div class="status-row"><div class="status-dot"></div>完了</div>
+    <div class="form-grid">
+      <div class="form-group"><label>受付日</label><input type="date"></div>
+      <div class="form-group"><label>案件番号</label><input type="text" value="${c.id}" readonly style="background:#f5f0e8;color:#888;"></div>
+      <div class="form-group"><label>申立人 氏名</label><input type="text" value="${c.moshitate}"></div>
+      <div class="form-group"><label>相手方 氏名</label><input type="text" value="${c.aitegata}"></div>
+      <div class="form-group full"><label>事件の概要</label><textarea>${c.gaiyou}</textarea></div>
+    </div>
+    ${renderDocPanel(0)}
+    <div class="action-row">
+      <button class="btn-secondary">一時保存</button>
+      <button class="btn-drive-save" onclick="saveToDrive()">↑ Driveに保存</button>
+      <button class="btn-primary" onclick="showToast('審査ステージへ進みます')">審査へ →</button>
+    </div>`;
+}
+
+function renderShinsa() {
+  return `
+    <div class="section-heading"><span>審査</span><span class="stage-badge">STAGE 02</span></div>
+    <div class="status-row"><div class="status-dot"></div>完了</div>
+    <div class="form-grid">
+      <div class="form-group"><label>審査担当者</label><input type="text" value="${currentUser ? currentUser.name : ''}"></div>
+      <div class="form-group"><label>審査完了日</label><input type="date"></div>
+      <div class="form-group"><label>受理区分</label>
+        <select><option>受理</option><option>不受理</option><option>補正</option></select>
+      </div>
+      <div class="form-group"><label>調停人</label><input type="text"></div>
+      <div class="form-group full"><label>審査コメント</label><textarea></textarea></div>
+    </div>
+    ${renderDocPanel(1)}
+    <div class="action-row">
+      <button class="btn-secondary">一時保存</button>
+      <button class="btn-drive-save" onclick="saveToDrive()">↑ Driveに保存</button>
+      <button class="btn-primary" onclick="showToast('期日ステージへ進みます')">期日へ →</button>
+    </div>`;
+}
+
+function renderKijitsu() {
+  return `
+    <div class="section-heading"><span>期日</span><span class="stage-badge">STAGE 03</span></div>
+    <div class="kijitsu-list" id="kijitsuList">
+      <div class="kijitsu-card">
+        <div class="kijitsu-num">第 1 回</div>
+        <div class="form-grid" style="margin-bottom:0;">
+          <div class="form-group"><label>期日</label><input type="date"></div>
+          <div class="form-group"><label>開始時刻</label><input type="time"></div>
+          <div class="form-group full"><label>協議内容・メモ</label><textarea style="min-height:60px;"></textarea></div>
+        </div>
+      </div>
+    </div>
+    <button class="add-kijitsu" onclick="addKijitsu()">＋ 期日を追加</button>
+    ${renderDocPanel(2)}
+    <div class="action-row">
+      <button class="btn-secondary">一時保存</button>
+      <button class="btn-drive-save" onclick="saveToDrive()">↑ Driveに保存</button>
+      <button class="btn-primary" onclick="showToast('合意書作成へ進みます')">合意書作成へ →</button>
+    </div>`;
+}
+
+function renderGoui() {
+  return `
+    <div class="section-heading"><span>合意書作成</span><span class="stage-badge">STAGE 04</span></div>
+    <div class="form-grid">
+      <div class="form-group"><label>合意成立日</label><input type="date"></div>
+      <div class="form-group"><label>合意の種類</label>
+        <select><option>調停合意</option><option>和解</option><option>取下げ</option></select>
+      </div>
+      <div class="form-group full"><label>合意の内容</label><textarea style="min-height:120px;"></textarea></div>
+      <div class="form-group"><label>申立人 署名日</label><input type="date"></div>
+      <div class="form-group"><label>相手方 署名日</label><input type="date"></div>
+    </div>
+    ${renderDocPanel(3)}
+    <div class="action-row">
+      <button class="btn-secondary">一時保存</button>
+      <button class="btn-drive-save" onclick="saveToDrive()">↑ Driveに保存</button>
+      <button class="btn-primary" onclick="showToast('終了処理へ進みます')">終了処理へ →</button>
+    </div>`;
+}
+
+function renderShuryo() {
+  return `
+    <div class="section-heading"><span>終了</span><span class="stage-badge">STAGE 05</span></div>
+    <div class="form-grid">
+      <div class="form-group"><label>終了日</label><input type="date"></div>
+      <div class="form-group"><label>終了区分</label>
+        <select><option>調停成立</option><option>調停不成立</option><option>取下げ</option><option>その他</option></select>
+      </div>
+      <div class="form-group full"><label>備考・引継ぎ事項</label><textarea></textarea></div>
+    </div>
+    ${renderDocPanel(4)}
+    <div class="action-row">
+      <button class="btn-secondary">一時保存</button>
+      <button class="btn-drive-save" onclick="saveToDrive()">↑ Driveに保存</button>
+      <button class="btn-primary" onclick="showToast('案件を終了しました', 'success')">案件を終了する</button>
+    </div>`;
+}
+
+let kijitsuCount = 1;
+function addKijitsu() {
+  kijitsuCount++;
+  const list = document.getElementById('kijitsuList');
+  if (!list) return;
+  const card = document.createElement('div');
+  card.className = 'kijitsu-card';
+  card.innerHTML = `
+    <div class="kijitsu-num">第 ${kijitsuCount} 回</div>
+    <div class="form-grid" style="margin-bottom:0;">
+      <div class="form-group"><label>期日</label><input type="date"></div>
+      <div class="form-group"><label>開始時刻</label><input type="time"></div>
+      <div class="form-group full"><label>協議内容・メモ</label><textarea style="min-height:60px;"></textarea></div>
+    </div>`;
+  list.appendChild(card);
+  showToast('第 ' + kijitsuCount + ' 回期日を追加しました');
+}
+
+function openNewCase() { document.getElementById('newCaseModal').classList.add('open'); }
+function closeModal()   { document.getElementById('newCaseModal').classList.remove('open'); }
+
+function createCase() {
+  const m = document.getElementById('newMoshitate').value;
+  const a = document.getElementById('newAitegata').value;
+  const g = document.getElementById('newGaiyou').value;
+  if (!m || !a) { showToast('申立人と相手方の氏名を入力してください', 'error'); return; }
+  const newId = `2024-00${cases.length + 1}`;
+  cases.push({ id: newId, moshitate: m, aitegata: a, stage: 0, gaiyou: g });
+  currentCaseIdx = cases.length - 1;
+  currentStage = 0;
+  closeModal();
+  renderSidebar();
+  renderContent();
+  showToast(`案件 ${newId} を作成しました`, 'success');
+}
+
+document.getElementById('newCaseModal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+
+let toastTimer;
+function showToast(msg, type = '') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (type ? ' ' + type : '');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
+}
+</script>
+</body>
+</html>
