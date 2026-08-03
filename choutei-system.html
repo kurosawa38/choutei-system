@@ -645,6 +645,9 @@
     <div class="sidebar-section">
       <div class="sidebar-label">Google Drive</div>
       <div class="drive-btn-group">
+        <button class="drive-btn" id="btnConnectDrive" onclick="window.driveTokenClient.requestAccessToken({prompt:'consent'})" style="display:none; border-color:#7ecfaa; color:#7ecfaa;">
+          ⚡ &nbsp;Driveに接続する
+        </button>
         <button class="drive-btn" id="btnSaveDrive" onclick="saveToDrive()" disabled>
           ↑ &nbsp;Driveに保存
         </button>
@@ -803,8 +806,8 @@ function handleCredentialResponse(response) {
     ${payload.name}
   `;
 
-  // Drive用トークン取得
-  const tokenClient = google.accounts.oauth2.initTokenClient({
+  // Drive用トークンクライアントを準備（ボタン押下時に許可画面を出す）
+  window.driveTokenClient = google.accounts.oauth2.initTokenClient({
     client_id: CLIENT_ID,
     scope: SCOPES,
     callback: (tokenResponse) => {
@@ -813,11 +816,14 @@ function handleCredentialResponse(response) {
         updateDriveStatus(true);
         document.getElementById('btnSaveDrive').disabled = false;
         document.getElementById('btnLoadDrive').disabled = false;
+        document.getElementById('btnConnectDrive').style.display = 'none';
         ensureDriveFolder();
+        showToast('Driveに接続しました', 'success');
       }
     },
   });
-  tokenClient.requestAccessToken({ prompt: '' });
+  // 接続ボタンを表示
+  document.getElementById('btnConnectDrive').style.display = 'block';
 
   renderContent();
 }
