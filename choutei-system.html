@@ -6,637 +6,174 @@
 <title>茨城司法書士会調停センター｜書類管理システム</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@300;400;600&family=Noto+Sans+JP:wght@300;400;500&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
 <script src="https://accounts.google.com/gsi/client" async defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/docxtemplater/3.37.6/docxtemplater.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pizzip/3.1.3/pizzip.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
 <style>
   :root {
     --ink: #1a1714;
     --paper: #f5f0e8;
     --paper-mid: #ede7d9;
-    --paper-dark: #d9cfba;
     --accent: #8b4513;
     --accent-light: #c4793a;
     --accent-pale: #f0e4d4;
-    --stage-1: #4a6741;
-    --stage-2: #3d5a80;
-    --stage-3: #7a5c8a;
-    --stage-4: #8b4513;
-    --stage-5: #2d6a4f;
     --muted: #7a7065;
     --border: #c8bfaa;
     --green: #2d6a4f;
   }
-
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-
-  body {
-    font-family: 'Noto Sans JP', sans-serif;
-    background: var(--paper);
-    color: var(--ink);
-    min-height: 100vh;
-    font-weight: 300;
-  }
-
-  /* ── LOGIN SCREEN ── */
-  #loginScreen {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-height: 100vh;
-    background: var(--ink);
-    color: var(--paper);
-  }
-
-  .login-box {
-    text-align: center;
-    padding: 3rem;
-    border: 1px solid #333;
-    max-width: 380px;
-    width: 90%;
-  }
-
-  .login-title {
-    font-family: 'Noto Serif JP', serif;
-    font-size: 1.1rem;
-    font-weight: 300;
-    letter-spacing: 0.15em;
-    margin-bottom: 0.5rem;
-  }
-
-  .login-sub {
-    font-family: 'DM Mono', monospace;
-    font-size: 0.7rem;
-    color: #666;
-    margin-bottom: 2.5rem;
-    letter-spacing: 0.1em;
-  }
-
-  .login-divider {
-    border: none;
-    border-top: 1px solid #333;
-    margin: 2rem 0;
-  }
-
-  .login-note {
-    font-size: 0.72rem;
-    color: #666;
-    line-height: 1.6;
-    font-family: 'DM Mono', monospace;
-  }
-
-  /* ── HEADER ── */
-  header {
-    background: var(--ink);
-    color: var(--paper);
-    padding: 0 2rem;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    height: 56px;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-  }
-
-  .header-title {
-    font-family: 'Noto Serif JP', serif;
-    font-size: 0.95rem;
-    font-weight: 300;
-    letter-spacing: 0.15em;
-  }
-
-  .header-right {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-  }
-
-  .user-badge {
-    font-family: 'DM Mono', monospace;
-    font-size: 0.7rem;
-    color: #888;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-  }
-
-  .user-avatar {
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    object-fit: cover;
-  }
-
-  .drive-status {
-    font-family: 'DM Mono', monospace;
-    font-size: 0.65rem;
-    padding: 0.2rem 0.6rem;
-    border-radius: 2px;
-    display: flex;
-    align-items: center;
-    gap: 0.3rem;
-  }
-
-  .drive-status.connected { background: rgba(45,106,79,0.3); color: #7ecfaa; }
-  .drive-status.disconnected { background: rgba(139,69,19,0.3); color: #e8a87c; }
-
-  .drive-dot {
-    width: 5px;
-    height: 5px;
-    border-radius: 50%;
-    background: currentColor;
-  }
-
-  /* ── LAYOUT ── */
-  .app {
-    display: grid;
-    grid-template-columns: 280px 1fr;
-    min-height: calc(100vh - 56px);
-  }
-
-  /* ── SIDEBAR ── */
-  .sidebar {
-    background: var(--ink);
-    color: var(--paper);
-    padding: 1.5rem 0;
-    border-right: 1px solid #333;
-  }
-
-  .sidebar-section { margin-bottom: 2rem; }
-
-  .sidebar-label {
-    font-family: 'DM Mono', monospace;
-    font-size: 0.65rem;
-    letter-spacing: 0.2em;
-    color: #666;
-    padding: 0 1.5rem;
-    margin-bottom: 0.5rem;
-    text-transform: uppercase;
-  }
-
-  .case-item {
-    padding: 0.75rem 1.5rem;
-    cursor: pointer;
-    transition: background 0.15s;
-    border-left: 3px solid transparent;
-  }
-
-  .case-item:hover { background: rgba(255,255,255,0.05); }
-  .case-item.active {
-    background: rgba(255,255,255,0.08);
-    border-left-color: var(--accent-light);
-  }
-
-  .case-id {
-    font-family: 'DM Mono', monospace;
-    font-size: 0.7rem;
-    color: #888;
-  }
-
-  .case-name { font-size: 0.85rem; margin-top: 0.2rem; color: var(--paper); }
-
-  .case-stage {
-    display: inline-block;
-    font-size: 0.65rem;
-    padding: 0.15rem 0.5rem;
-    border-radius: 2px;
-    margin-top: 0.3rem;
-    font-family: 'DM Mono', monospace;
-  }
-
-  .stage-受付 { background: #4a6741; color: #fff; }
-  .stage-審査 { background: #3d5a80; color: #fff; }
-  .stage-期日 { background: #7a5c8a; color: #fff; }
-  .stage-合意書 { background: #8b4513; color: #fff; }
-  .stage-終了 { background: #2d6a4f; color: #fff; }
-
-  .new-case-btn {
-    margin: 0 1.5rem;
-    padding: 0.6rem 1rem;
-    background: transparent;
-    border: 1px solid #444;
-    color: var(--paper);
-    font-family: 'Noto Sans JP', sans-serif;
-    font-size: 0.8rem;
-    cursor: pointer;
-    width: calc(100% - 3rem);
-    text-align: left;
-    transition: border-color 0.15s, background 0.15s;
-    letter-spacing: 0.05em;
-  }
-  .new-case-btn:hover { border-color: var(--accent-light); background: rgba(196,121,58,0.1); }
-
-  /* ── Drive BUTTONS in sidebar ── */
-  .drive-btn-group {
-    padding: 0 1.5rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.4rem;
-  }
-
-  .drive-btn {
-    padding: 0.5rem 0.75rem;
-    background: transparent;
-    border: 1px solid #444;
-    color: #aaa;
-    font-family: 'DM Mono', monospace;
-    font-size: 0.72rem;
-    cursor: pointer;
-    text-align: left;
-    transition: all 0.15s;
-    border-radius: 2px;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-  }
-  .drive-btn:hover { border-color: #7ecfaa; color: #7ecfaa; }
-  .drive-btn:disabled { opacity: 0.3; cursor: not-allowed; }
-
-  /* ── MAIN ── */
-  .main { display: flex; flex-direction: column; }
-
-  /* ── PROGRESS BAR ── */
-  .progress-bar {
-    background: var(--paper-mid);
-    border-bottom: 1px solid var(--border);
-    padding: 1rem 2rem;
-    display: flex;
-    gap: 0;
-    align-items: center;
-  }
-
-  .progress-step {
-    display: flex;
-    align-items: center;
-    gap: 0;
-    flex: 1;
-    cursor: pointer;
-  }
-
-  .step-content {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.3rem;
-    flex: 1;
-    padding: 0.5rem;
-    transition: opacity 0.2s;
-  }
-
-  .step-content:hover { opacity: 0.8; }
-
-  .step-num {
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    border: 2px solid var(--border);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-family: 'DM Mono', monospace;
-    font-size: 0.75rem;
-    background: var(--paper);
-    color: var(--muted);
-    transition: all 0.2s;
-  }
-
-  .step-label {
-    font-size: 0.7rem;
-    color: var(--muted);
-    white-space: nowrap;
-    font-family: 'Noto Serif JP', serif;
-  }
-
-  .progress-step.done .step-num { background: var(--stage-5); border-color: var(--stage-5); color: white; }
-  .progress-step.active .step-num { background: var(--accent); border-color: var(--accent); color: white; }
-  .progress-step.active .step-label { color: var(--accent); font-weight: 500; }
-  .step-connector { flex: 0 0 24px; height: 1px; background: var(--border); }
-
-  /* ── CONTENT ── */
-  .content { flex: 1; padding: 2rem; overflow-y: auto; }
-
-  .section-heading {
-    font-family: 'Noto Serif JP', serif;
-    font-size: 1.1rem;
-    font-weight: 400;
-    color: var(--ink);
-    margin-bottom: 1.5rem;
-    padding-bottom: 0.75rem;
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-  }
-
-  .stage-badge {
-    font-family: 'DM Mono', monospace;
-    font-size: 0.65rem;
-    padding: 0.2rem 0.6rem;
-    border-radius: 2px;
-    background: var(--accent);
-    color: white;
-    letter-spacing: 0.05em;
-  }
-
-  /* ── FORM ── */
-  .form-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1rem 1.5rem;
-    margin-bottom: 2rem;
-  }
-
-  .form-group { display: flex; flex-direction: column; gap: 0.4rem; }
-  .form-group.full { grid-column: 1 / -1; }
-
-  label {
-    font-size: 0.72rem;
-    color: var(--muted);
-    letter-spacing: 0.05em;
-    font-family: 'DM Mono', monospace;
-  }
-
-  input, select, textarea {
-    padding: 0.5rem 0.75rem;
-    border: 1px solid var(--border);
-    background: white;
-    font-family: 'Noto Sans JP', sans-serif;
-    font-size: 0.85rem;
-    color: var(--ink);
-    outline: none;
-    transition: border-color 0.15s;
-    border-radius: 2px;
-    font-weight: 300;
-  }
-
-  input:focus, select:focus, textarea:focus { border-color: var(--accent); }
-  textarea { resize: vertical; min-height: 80px; }
-
-  /* ── DOC PANEL ── */
-  .doc-panel {
-    background: var(--paper-mid);
-    border: 1px solid var(--border);
-    border-radius: 2px;
-    padding: 1.25rem 1.5rem;
-    margin-bottom: 2rem;
-  }
-
-  .doc-panel-title {
-    font-family: 'Noto Serif JP', serif;
-    font-size: 0.85rem;
-    color: var(--muted);
-    margin-bottom: 1rem;
-    letter-spacing: 0.1em;
-  }
-
-  .doc-list { display: flex; flex-direction: column; gap: 0.5rem; }
-
-  .doc-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background: white;
-    border: 1px solid var(--border);
-    padding: 0.6rem 1rem;
-    border-radius: 2px;
-    transition: border-color 0.15s;
-  }
-
-  .doc-item:hover { border-color: var(--accent-light); }
-
-  .doc-info { display: flex; flex-direction: column; gap: 0.15rem; }
-  .doc-name { font-size: 0.82rem; color: var(--ink); }
-  .doc-desc { font-size: 0.7rem; color: var(--muted); font-family: 'DM Mono', monospace; }
-
-  .doc-actions { display: flex; gap: 0.4rem; }
-
-  .btn-dl {
-    padding: 0.3rem 0.8rem;
-    font-size: 0.72rem;
-    font-family: 'DM Mono', monospace;
-    border: 1px solid var(--border);
-    background: white;
-    cursor: pointer;
-    color: var(--ink);
-    letter-spacing: 0.05em;
-    transition: all 0.15s;
-    border-radius: 2px;
-  }
-
-  .btn-dl:hover { background: var(--accent-pale); border-color: var(--accent-light); }
-  .btn-dl.pdf { border-color: #c0392b; color: #c0392b; }
-  .btn-dl.pdf:hover { background: #fff0ee; }
-  .btn-dl.docx { border-color: #2980b9; color: #2980b9; }
-  .btn-dl.docx:hover { background: #eef5ff; }
-
-  /* ── ACTION ROW ── */
-  .action-row {
-    display: flex;
-    gap: 0.75rem;
-    justify-content: flex-end;
-    padding-top: 1rem;
-    border-top: 1px solid var(--border);
-  }
-
-  .btn-primary {
-    padding: 0.6rem 1.5rem;
-    background: var(--accent);
-    color: white;
-    border: none;
-    font-family: 'Noto Sans JP', sans-serif;
-    font-size: 0.82rem;
-    cursor: pointer;
-    transition: background 0.15s;
-    letter-spacing: 0.05em;
-    border-radius: 2px;
-  }
-  .btn-primary:hover { background: var(--accent-light); }
-
-  .btn-secondary {
-    padding: 0.6rem 1.5rem;
-    background: transparent;
-    color: var(--ink);
-    border: 1px solid var(--border);
-    font-family: 'Noto Sans JP', sans-serif;
-    font-size: 0.82rem;
-    cursor: pointer;
-    transition: all 0.15s;
-    border-radius: 2px;
-  }
-  .btn-secondary:hover { border-color: var(--ink); }
-
-  /* ── SAVE TO DRIVE BTN ── */
-  .btn-drive-save {
-    padding: 0.6rem 1.5rem;
-    background: rgba(45,106,79,0.1);
-    color: var(--green);
-    border: 1px solid var(--green);
-    font-family: 'DM Mono', monospace;
-    font-size: 0.75rem;
-    cursor: pointer;
-    transition: all 0.15s;
-    border-radius: 2px;
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-  }
-  .btn-drive-save:hover { background: rgba(45,106,79,0.2); }
-
-  /* ── KIJITSU ── */
-  .kijitsu-list { display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1rem; }
-
-  .kijitsu-card {
-    background: white;
-    border: 1px solid var(--border);
-    border-radius: 2px;
-    padding: 1rem 1.25rem;
-    position: relative;
-  }
-
-  .kijitsu-num {
-    font-family: 'DM Mono', monospace;
-    font-size: 0.65rem;
-    color: var(--muted);
-    position: absolute;
-    top: 0.75rem;
-    right: 1rem;
-  }
-
-  .add-kijitsu {
-    padding: 0.5rem;
-    border: 1px dashed var(--border);
-    background: transparent;
-    width: 100%;
-    font-size: 0.8rem;
-    color: var(--muted);
-    cursor: pointer;
-    font-family: 'Noto Sans JP', sans-serif;
-    transition: all 0.15s;
-    border-radius: 2px;
-    margin-bottom: 1.5rem;
-  }
-  .add-kijitsu:hover { border-color: var(--accent-light); color: var(--accent); }
-
-  /* ── STATUS ── */
-  .status-row {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    margin-bottom: 1.5rem;
-    font-size: 0.75rem;
-    color: var(--muted);
-    font-family: 'DM Mono', monospace;
-  }
-
-  .status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--stage-5); }
-
-  /* ── MODAL ── */
-  .modal-overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(26,23,20,0.7);
-    z-index: 200;
-    align-items: center;
-    justify-content: center;
-  }
-  .modal-overlay.open { display: flex; }
-
-  .modal {
-    background: var(--paper);
-    padding: 2rem;
-    width: 480px;
-    max-width: 90vw;
-    border: 1px solid var(--border);
-    border-radius: 2px;
-  }
-
-  .modal-title {
-    font-family: 'Noto Serif JP', serif;
-    font-size: 1rem;
-    margin-bottom: 1.5rem;
-    padding-bottom: 0.75rem;
-    border-bottom: 1px solid var(--border);
-  }
-
-  .modal-actions { display: flex; gap: 0.5rem; justify-content: flex-end; margin-top: 1.5rem; }
-
-  /* ── TOAST ── */
-  .toast {
-    position: fixed;
-    bottom: 2rem;
-    right: 2rem;
-    background: var(--ink);
-    color: white;
-    padding: 0.75rem 1.25rem;
-    font-size: 0.8rem;
-    font-family: 'DM Mono', monospace;
-    border-radius: 2px;
-    opacity: 0;
-    transform: translateY(8px);
-    transition: all 0.3s;
-    z-index: 300;
-    pointer-events: none;
-    max-width: 320px;
-  }
-  .toast.show { opacity: 1; transform: translateY(0); }
-  .toast.success { background: var(--green); }
-  .toast.error { background: #c0392b; }
-
-  ::-webkit-scrollbar { width: 4px; }
-  ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: var(--border); }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Noto Sans JP',sans-serif; background:var(--paper); color:var(--ink); min-height:100vh; font-weight:300; }
+
+  /* LOGIN */
+  #loginScreen { display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:100vh; background:var(--ink); color:var(--paper); }
+  .login-box { text-align:center; padding:3rem; border:1px solid #333; max-width:380px; width:90%; }
+  .login-title { font-family:'Noto Serif JP',serif; font-size:1.1rem; font-weight:300; letter-spacing:0.15em; margin-bottom:0.5rem; }
+  .login-sub { font-family:'DM Mono',monospace; font-size:0.7rem; color:#666; margin-bottom:2.5rem; letter-spacing:0.1em; }
+  .login-note { font-size:0.72rem; color:#666; line-height:1.6; font-family:'DM Mono',monospace; margin-top:1.5rem; }
+
+  /* HEADER */
+  header { background:var(--ink); color:var(--paper); padding:0 2rem; display:flex; align-items:center; justify-content:space-between; height:56px; position:sticky; top:0; z-index:100; }
+  .header-title { font-family:'Noto Serif JP',serif; font-size:0.95rem; font-weight:300; letter-spacing:0.15em; }
+  .header-right { display:flex; align-items:center; gap:1rem; }
+  .user-badge { font-family:'DM Mono',monospace; font-size:0.7rem; color:#888; display:flex; align-items:center; gap:0.5rem; }
+  .user-avatar { width:24px; height:24px; border-radius:50%; object-fit:cover; }
+  .drive-status { font-family:'DM Mono',monospace; font-size:0.65rem; padding:0.2rem 0.6rem; border-radius:2px; display:flex; align-items:center; gap:0.3rem; }
+  .drive-status.connected { background:rgba(45,106,79,0.3); color:#7ecfaa; }
+  .drive-status.disconnected { background:rgba(139,69,19,0.3); color:#e8a87c; }
+  .drive-dot { width:5px; height:5px; border-radius:50%; background:currentColor; }
+
+  /* LAYOUT */
+  .app { display:grid; grid-template-columns:280px 1fr; min-height:calc(100vh - 56px); }
+
+  /* SIDEBAR */
+  .sidebar { background:var(--ink); color:var(--paper); padding:1.5rem 0; border-right:1px solid #333; }
+  .sidebar-section { margin-bottom:2rem; }
+  .sidebar-label { font-family:'DM Mono',monospace; font-size:0.65rem; letter-spacing:0.2em; color:#666; padding:0 1.5rem; margin-bottom:0.5rem; text-transform:uppercase; }
+  .case-item { padding:0.75rem 1.5rem; cursor:pointer; transition:background 0.15s; border-left:3px solid transparent; }
+  .case-item:hover { background:rgba(255,255,255,0.05); }
+  .case-item.active { background:rgba(255,255,255,0.08); border-left-color:var(--accent-light); }
+  .case-id { font-family:'DM Mono',monospace; font-size:0.7rem; color:#888; }
+  .case-name { font-size:0.85rem; margin-top:0.2rem; color:var(--paper); }
+  .case-stage { display:inline-block; font-size:0.65rem; padding:0.15rem 0.5rem; border-radius:2px; margin-top:0.3rem; font-family:'DM Mono',monospace; }
+  .stage-受付 { background:#4a6741; color:#fff; }
+  .stage-審査 { background:#3d5a80; color:#fff; }
+  .stage-期日 { background:#7a5c8a; color:#fff; }
+  .stage-合意書 { background:#8b4513; color:#fff; }
+  .stage-終了 { background:#2d6a4f; color:#fff; }
+  .new-case-btn { margin:0 1.5rem; padding:0.6rem 1rem; background:transparent; border:1px solid #444; color:var(--paper); font-family:'Noto Sans JP',sans-serif; font-size:0.8rem; cursor:pointer; width:calc(100% - 3rem); text-align:left; transition:border-color 0.15s,background 0.15s; letter-spacing:0.05em; }
+  .new-case-btn:hover { border-color:var(--accent-light); background:rgba(196,121,58,0.1); }
+  .drive-btn-group { padding:0 1.5rem; display:flex; flex-direction:column; gap:0.4rem; }
+  .drive-btn { padding:0.5rem 0.75rem; background:transparent; border:1px solid #444; color:#aaa; font-family:'DM Mono',monospace; font-size:0.72rem; cursor:pointer; text-align:left; transition:all 0.15s; border-radius:2px; display:flex; align-items:center; gap:0.5rem; }
+  .drive-btn:hover { border-color:#7ecfaa; color:#7ecfaa; }
+  .drive-btn:disabled { opacity:0.3; cursor:not-allowed; }
+  .drive-btn.connect { border-color:#7ecfaa; color:#7ecfaa; }
+
+  /* MAIN */
+  .main { display:flex; flex-direction:column; }
+
+  /* PROGRESS */
+  .progress-bar { background:var(--paper-mid); border-bottom:1px solid var(--border); padding:1rem 2rem; display:flex; align-items:center; }
+  .progress-step { display:flex; align-items:center; flex:1; cursor:pointer; }
+  .step-content { display:flex; flex-direction:column; align-items:center; gap:0.3rem; flex:1; padding:0.5rem; transition:opacity 0.2s; }
+  .step-content:hover { opacity:0.8; }
+  .step-num { width:28px; height:28px; border-radius:50%; border:2px solid var(--border); display:flex; align-items:center; justify-content:center; font-family:'DM Mono',monospace; font-size:0.75rem; background:var(--paper); color:var(--muted); transition:all 0.2s; }
+  .step-label { font-size:0.7rem; color:var(--muted); white-space:nowrap; font-family:'Noto Serif JP',serif; }
+  .progress-step.done .step-num { background:var(--green); border-color:var(--green); color:white; }
+  .progress-step.active .step-num { background:var(--accent); border-color:var(--accent); color:white; }
+  .progress-step.active .step-label { color:var(--accent); font-weight:500; }
+  .step-connector { flex:0 0 24px; height:1px; background:var(--border); }
+
+  /* CONTENT */
+  .content { flex:1; padding:2rem; overflow-y:auto; }
+  .section-heading { font-family:'Noto Serif JP',serif; font-size:1.1rem; font-weight:400; margin-bottom:1.5rem; padding-bottom:0.75rem; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:0.75rem; }
+  .stage-badge { font-family:'DM Mono',monospace; font-size:0.65rem; padding:0.2rem 0.6rem; border-radius:2px; background:var(--accent); color:white; }
+
+  /* FORM */
+  .form-grid { display:grid; grid-template-columns:1fr 1fr; gap:1rem 1.5rem; margin-bottom:2rem; }
+  .form-group { display:flex; flex-direction:column; gap:0.4rem; }
+  .form-group.full { grid-column:1/-1; }
+  label { font-size:0.72rem; color:var(--muted); letter-spacing:0.05em; font-family:'DM Mono',monospace; }
+  input, select, textarea { padding:0.5rem 0.75rem; border:1px solid var(--border); background:white; font-family:'Noto Sans JP',sans-serif; font-size:0.85rem; color:var(--ink); outline:none; transition:border-color 0.15s; border-radius:2px; font-weight:300; }
+  input:focus, select:focus, textarea:focus { border-color:var(--accent); }
+  textarea { resize:vertical; min-height:80px; }
+
+  /* DOC PANEL */
+  .doc-panel { background:var(--paper-mid); border:1px solid var(--border); border-radius:2px; padding:1.25rem 1.5rem; margin-bottom:2rem; }
+  .doc-panel-title { font-family:'Noto Serif JP',serif; font-size:0.85rem; color:var(--muted); margin-bottom:1rem; letter-spacing:0.1em; }
+  .doc-list { display:flex; flex-direction:column; gap:0.5rem; }
+  .doc-item { display:flex; align-items:center; justify-content:space-between; background:white; border:1px solid var(--border); padding:0.6rem 1rem; border-radius:2px; transition:border-color 0.15s; }
+  .doc-item:hover { border-color:var(--accent-light); }
+  .doc-info { display:flex; flex-direction:column; gap:0.15rem; }
+  .doc-name { font-size:0.82rem; }
+  .doc-desc { font-size:0.7rem; color:var(--muted); font-family:'DM Mono',monospace; }
+  .doc-actions { display:flex; gap:0.4rem; }
+  .btn-dl { padding:0.3rem 0.8rem; font-size:0.72rem; font-family:'DM Mono',monospace; border:1px solid var(--border); background:white; cursor:pointer; letter-spacing:0.05em; transition:all 0.15s; border-radius:2px; }
+  .btn-dl:hover { background:var(--accent-pale); border-color:var(--accent-light); }
+  .btn-dl.docx { border-color:#2980b9; color:#2980b9; }
+  .btn-dl.docx:hover { background:#eef5ff; }
+
+  /* ACTION ROW */
+  .action-row { display:flex; gap:0.75rem; justify-content:flex-end; padding-top:1rem; border-top:1px solid var(--border); }
+  .btn-primary { padding:0.6rem 1.5rem; background:var(--accent); color:white; border:none; font-family:'Noto Sans JP',sans-serif; font-size:0.82rem; cursor:pointer; transition:background 0.15s; letter-spacing:0.05em; border-radius:2px; }
+  .btn-primary:hover { background:var(--accent-light); }
+  .btn-secondary { padding:0.6rem 1.5rem; background:transparent; color:var(--ink); border:1px solid var(--border); font-family:'Noto Sans JP',sans-serif; font-size:0.82rem; cursor:pointer; transition:all 0.15s; border-radius:2px; }
+  .btn-secondary:hover { border-color:var(--ink); }
+  .btn-drive-save { padding:0.6rem 1.5rem; background:rgba(45,106,79,0.1); color:var(--green); border:1px solid var(--green); font-family:'DM Mono',monospace; font-size:0.75rem; cursor:pointer; transition:all 0.15s; border-radius:2px; }
+  .btn-drive-save:hover { background:rgba(45,106,79,0.2); }
+
+  /* KIJITSU */
+  .kijitsu-list { display:flex; flex-direction:column; gap:0.75rem; margin-bottom:1rem; }
+  .kijitsu-card { background:white; border:1px solid var(--border); border-radius:2px; padding:1rem 1.25rem; position:relative; }
+  .kijitsu-num { font-family:'DM Mono',monospace; font-size:0.65rem; color:var(--muted); position:absolute; top:0.75rem; right:1rem; }
+  .add-kijitsu { padding:0.5rem; border:1px dashed var(--border); background:transparent; width:100%; font-size:0.8rem; color:var(--muted); cursor:pointer; font-family:'Noto Sans JP',sans-serif; transition:all 0.15s; border-radius:2px; margin-bottom:1.5rem; }
+  .add-kijitsu:hover { border-color:var(--accent-light); color:var(--accent); }
+  .status-row { display:flex; align-items:center; gap:0.5rem; margin-bottom:1.5rem; font-size:0.75rem; color:var(--muted); font-family:'DM Mono',monospace; }
+  .status-dot { width:6px; height:6px; border-radius:50%; background:var(--green); }
+
+  /* MODAL */
+  .modal-overlay { display:none; position:fixed; inset:0; background:rgba(26,23,20,0.7); z-index:200; align-items:center; justify-content:center; }
+  .modal-overlay.open { display:flex; }
+  .modal { background:var(--paper); padding:2rem; width:480px; max-width:90vw; border:1px solid var(--border); border-radius:2px; }
+  .modal-title { font-family:'Noto Serif JP',serif; font-size:1rem; margin-bottom:1.5rem; padding-bottom:0.75rem; border-bottom:1px solid var(--border); }
+  .modal-actions { display:flex; gap:0.5rem; justify-content:flex-end; margin-top:1.5rem; }
+
+  /* TOAST */
+  .toast { position:fixed; bottom:2rem; right:2rem; background:var(--ink); color:white; padding:0.75rem 1.25rem; font-size:0.8rem; font-family:'DM Mono',monospace; border-radius:2px; opacity:0; transform:translateY(8px); transition:all 0.3s; z-index:300; pointer-events:none; max-width:320px; }
+  .toast.show { opacity:1; transform:translateY(0); }
+  .toast.success { background:var(--green); }
+  .toast.error { background:#c0392b; }
+
+  ::-webkit-scrollbar { width:4px; }
+  ::-webkit-scrollbar-thumb { background:var(--border); }
 </style>
 </head>
 <body>
 
-<!-- LOGIN SCREEN -->
+<!-- LOGIN -->
 <div id="loginScreen">
   <div class="login-box">
     <div class="login-title">茨城司法書士会調停センター</div>
     <div class="login-sub">書類管理システム</div>
     <div id="googleSignInBtn"></div>
-    <hr class="login-divider">
     <div class="login-note">メンバー（8名）のGoogleアカウントでログインしてください</div>
   </div>
 </div>
 
-<!-- MAIN APP (hidden until login) -->
+<!-- MAIN APP -->
 <div id="mainApp" style="display:none;">
-
 <header>
   <div class="header-title">茨城司法書士会調停センター｜書類管理システム</div>
   <div class="header-right">
-    <div class="drive-status" id="driveStatus">
-      <div class="drive-dot"></div>
-      <span>Drive未接続</span>
-    </div>
+    <div class="drive-status disconnected" id="driveStatus"><div class="drive-dot"></div><span>Drive未接続</span></div>
     <div class="user-badge" id="userBadge"></div>
   </div>
 </header>
 
 <div class="app">
-
-  <!-- SIDEBAR -->
   <aside class="sidebar">
     <div class="sidebar-section">
       <div class="sidebar-label">案件一覧</div>
-      <div id="caseList">
-        <div class="case-item active" onclick="selectCase(0)">
-          <div class="case-id">2024-001</div>
-          <div class="case-name">山田 太郎 / 鈴木 花子</div>
-          <span class="case-stage stage-期日">期日</span>
-        </div>
-        <div class="case-item" onclick="selectCase(1)">
-          <div class="case-id">2024-002</div>
-          <div class="case-name">佐藤 一郎 / 田中 良子</div>
-          <span class="case-stage stage-審査">審査</span>
-        </div>
-        <div class="case-item" onclick="selectCase(2)">
-          <div class="case-id">2024-003</div>
-          <div class="case-name">渡辺 健 / 伊藤 幸子</div>
-          <span class="case-stage stage-合意書">合意書</span>
-        </div>
-      </div>
+      <div id="caseList"></div>
     </div>
     <div class="sidebar-section">
       <div class="sidebar-label">操作</div>
@@ -645,85 +182,39 @@
     <div class="sidebar-section">
       <div class="sidebar-label">Google Drive</div>
       <div class="drive-btn-group">
-        <button class="drive-btn" id="btnConnectDrive" onclick="window.driveTokenClient.requestAccessToken({prompt:'consent'})" style="display:none; border-color:#7ecfaa; color:#7ecfaa;">
-          ⚡ &nbsp;Driveに接続する
-        </button>
-        <button class="drive-btn" id="btnSaveDrive" onclick="saveToDrive()" disabled>
-          ↑ &nbsp;Driveに保存
-        </button>
-        <button class="drive-btn" id="btnLoadDrive" onclick="loadFromDrive()" disabled>
-          ↓ &nbsp;Driveから読み込み
-        </button>
+        <button class="drive-btn connect" id="btnConnectDrive" onclick="connectDrive()" style="display:none;">⚡ Driveに接続する</button>
+        <button class="drive-btn" id="btnSaveDrive" onclick="saveToDrive()" disabled>↑ Driveに保存</button>
+        <button class="drive-btn" id="btnLoadDrive" onclick="loadFromDrive()" disabled>↓ Driveから読み込み</button>
       </div>
     </div>
   </aside>
 
-  <!-- MAIN -->
   <main class="main">
     <div class="progress-bar">
-      <div class="progress-step done" onclick="setStage(0)">
-        <div class="step-content">
-          <div class="step-num">✓</div>
-          <div class="step-label">受付</div>
-        </div>
-      </div>
+      <div class="progress-step" onclick="setStage(0)"><div class="step-content"><div class="step-num">1</div><div class="step-label">受付</div></div></div>
       <div class="step-connector"></div>
-      <div class="progress-step done" onclick="setStage(1)">
-        <div class="step-content">
-          <div class="step-num">✓</div>
-          <div class="step-label">審査</div>
-        </div>
-      </div>
+      <div class="progress-step" onclick="setStage(1)"><div class="step-content"><div class="step-num">2</div><div class="step-label">審査</div></div></div>
       <div class="step-connector"></div>
-      <div class="progress-step active" onclick="setStage(2)">
-        <div class="step-content">
-          <div class="step-num">3</div>
-          <div class="step-label">期日</div>
-        </div>
-      </div>
+      <div class="progress-step" onclick="setStage(2)"><div class="step-content"><div class="step-num">3</div><div class="step-label">期日</div></div></div>
       <div class="step-connector"></div>
-      <div class="progress-step" onclick="setStage(3)">
-        <div class="step-content">
-          <div class="step-num">4</div>
-          <div class="step-label">合意書</div>
-        </div>
-      </div>
+      <div class="progress-step" onclick="setStage(3)"><div class="step-content"><div class="step-num">4</div><div class="step-label">合意書</div></div></div>
       <div class="step-connector"></div>
-      <div class="progress-step" onclick="setStage(4)">
-        <div class="step-content">
-          <div class="step-num">5</div>
-          <div class="step-label">終了</div>
-        </div>
-      </div>
+      <div class="progress-step" onclick="setStage(4)"><div class="step-content"><div class="step-num">5</div><div class="step-label">終了</div></div></div>
     </div>
-
     <div class="content" id="contentArea"></div>
   </main>
 </div>
-
-</div><!-- /mainApp -->
+</div>
 
 <!-- NEW CASE MODAL -->
 <div class="modal-overlay" id="newCaseModal">
   <div class="modal">
     <div class="modal-title">新規案件の作成</div>
     <div class="form-grid">
-      <div class="form-group full">
-        <label>案件番号（自動採番）</label>
-        <input type="text" value="2024-004" readonly style="background:#f5f0e8; color:#888;">
-      </div>
-      <div class="form-group">
-        <label>申立人 氏名</label>
-        <input type="text" id="newMoshitate" placeholder="山田 太郎">
-      </div>
-      <div class="form-group">
-        <label>相手方 氏名</label>
-        <input type="text" id="newAitegata" placeholder="鈴木 花子">
-      </div>
-      <div class="form-group full">
-        <label>事件の概要</label>
-        <textarea id="newGaiyou" placeholder="事件の概要を入力してください"></textarea>
-      </div>
+      <div class="form-group full"><label>案件番号（自動採番）</label><input type="text" id="newCaseId" readonly style="background:#f5f0e8;color:#888;"></div>
+      <div class="form-group"><label>申立人 氏名</label><input type="text" id="newMoshitate" placeholder="山田 太郎"></div>
+      <div class="form-group"><label>相手方 氏名</label><input type="text" id="newAitegata" placeholder="鈴木 花子"></div>
+      <div class="form-group full"><label>事件の概要</label><textarea id="newGaiyou"></textarea></div>
     </div>
     <div class="modal-actions">
       <button class="btn-secondary" onclick="closeModal()">キャンセル</button>
@@ -740,49 +231,26 @@ const CLIENT_ID = '21521310529-5iv71stbomqitmoje48dthiigfqqthl2.apps.googleuserc
 const SCOPES = 'https://www.googleapis.com/auth/drive.file';
 const FOLDER_NAME = '茨城調停センター_案件データ';
 
+// ── 受理決定書テンプレート（Base64埋め込み）──
+const JURIDECISION_TEMPLATE_B64 = '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';
+
 // ── STATE ──
 let accessToken = null;
 let currentUser = null;
-let currentStage = 2;
+let currentStage = 0;
 let currentCaseIdx = 0;
 let driveFolderId = null;
+let driveTokenClient = null;
+let kijitsuCount = 1;
 
 const cases = [
-  { id: '2024-001', moshitate: '山田 太郎', aitegata: '鈴木 花子', stage: 2, gaiyou: '不動産の共有持分に関する紛争。' },
-  { id: '2024-002', moshitate: '佐藤 一郎', aitegata: '田中 良子', stage: 1, gaiyou: '金銭消費貸借に関する紛争。' },
-  { id: '2024-003', moshitate: '渡辺 健',   aitegata: '伊藤 幸子', stage: 3, gaiyou: '遺産分割に関する紛争。' },
+  { id: 'R06-001', moshitate: '山田 太郎', aitegata: '鈴木 花子', stage: 2, gaiyou: '不動産の共有持分に関する紛争。', uketsuke_bi: '', juridecision_bi: '', jian_mei: '不動産共有持分紛争' },
+  { id: 'R06-002', moshitate: '佐藤 一郎', aitegata: '田中 良子', stage: 1, gaiyou: '金銭消費貸借に関する紛争。', uketsuke_bi: '', juridecision_bi: '', jian_mei: '金銭消費貸借紛争' },
 ];
 
-const stageNames = ['受付', '審査', '期日', '合意書', '終了'];
+const stageNames = ['受付','審査','期日','合意書','終了'];
 
-const stageDocs = {
-  0: [
-    { name: '調停申立書',   desc: '受付時・申立人記載用' },
-    { name: '受理通知書',   desc: '申立人・相手方への通知' },
-    { name: '事件概要票',   desc: '内部管理用' },
-  ],
-  1: [
-    { name: '審査チェックリスト', desc: '事案審査用' },
-    { name: '審査結果通知書',     desc: '受理可否の通知' },
-    { name: '調停人選任書',       desc: '調停人指定用' },
-  ],
-  2: [
-    { name: '期日通知書',   desc: '各当事者への送付' },
-    { name: '期日調書',     desc: '各回期日の記録' },
-    { name: '当事者確認票', desc: '本人確認用' },
-  ],
-  3: [
-    { name: '調停合意書（案）', desc: '合意内容のドラフト' },
-    { name: '調停合意書',       desc: '正本・当事者署名用' },
-    { name: '合意書謄本',       desc: '各当事者保管用' },
-  ],
-  4: [
-    { name: '終了通知書',   desc: '当事者への送付' },
-    { name: '事件終了票',   desc: '内部記録・アーカイブ' },
-  ],
-};
-
-// ── GOOGLE SIGN IN ──
+// ── GOOGLE LOGIN ──
 window.onload = function() {
   google.accounts.id.initialize({
     client_id: CLIENT_ID,
@@ -790,30 +258,25 @@ window.onload = function() {
   });
   google.accounts.id.renderButton(
     document.getElementById('googleSignInBtn'),
-    { theme: 'filled_black', size: 'large', text: 'signin_with', locale: 'ja' }
+    { theme:'filled_black', size:'large', text:'signin_with', locale:'ja' }
   );
 };
 
 function handleCredentialResponse(response) {
   const payload = parseJwt(response.credential);
   currentUser = payload;
-
   document.getElementById('loginScreen').style.display = 'none';
   document.getElementById('mainApp').style.display = 'block';
+  document.getElementById('userBadge').innerHTML = `<img class="user-avatar" src="${payload.picture}"><span>${payload.name}</span>`;
 
-  document.getElementById('userBadge').innerHTML = `
-    <img class="user-avatar" src="${payload.picture}" alt="">
-    ${payload.name}
-  `;
-
-  // Drive用トークンクライアントを準備（ボタン押下時に許可画面を出す）
-  window.driveTokenClient = google.accounts.oauth2.initTokenClient({
+  driveTokenClient = google.accounts.oauth2.initTokenClient({
     client_id: CLIENT_ID,
     scope: SCOPES,
     callback: (tokenResponse) => {
       if (tokenResponse.access_token) {
         accessToken = tokenResponse.access_token;
-        updateDriveStatus(true);
+        document.getElementById('driveStatus').className = 'drive-status connected';
+        document.getElementById('driveStatus').innerHTML = '<div class="drive-dot"></div><span>Drive接続済み</span>';
         document.getElementById('btnSaveDrive').disabled = false;
         document.getElementById('btnLoadDrive').disabled = false;
         document.getElementById('btnConnectDrive').style.display = 'none';
@@ -822,163 +285,128 @@ function handleCredentialResponse(response) {
       }
     },
   });
-  // 接続ボタンを表示
   document.getElementById('btnConnectDrive').style.display = 'block';
 
+  renderSidebar();
   renderContent();
 }
 
+function connectDrive() {
+  driveTokenClient.requestAccessToken({ prompt: 'consent' });
+}
+
 function parseJwt(token) {
-  const base64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
-  return JSON.parse(decodeURIComponent(atob(base64).split('').map(c =>
-    '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join('')));
+  const base64 = token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/');
+  return JSON.parse(decodeURIComponent(atob(base64).split('').map(c => '%' + ('00'+c.charCodeAt(0).toString(16)).slice(-2)).join('')));
 }
 
-function updateDriveStatus(connected) {
-  const el = document.getElementById('driveStatus');
-  if (connected) {
-    el.className = 'drive-status connected';
-    el.innerHTML = '<div class="drive-dot"></div><span>Drive接続済み</span>';
-  } else {
-    el.className = 'drive-status disconnected';
-    el.innerHTML = '<div class="drive-dot"></div><span>Drive未接続</span>';
-  }
-}
-
-// ── DRIVE FOLDER ──
+// ── DRIVE ──
 async function ensureDriveFolder() {
-  const res = await fetch(
-    `https://www.googleapis.com/drive/v3/files?q=name='${FOLDER_NAME}' and mimeType='application/vnd.google-apps.folder' and trashed=false`,
-    { headers: { Authorization: `Bearer ${accessToken}` } }
-  );
+  const res = await fetch(`https://www.googleapis.com/drive/v3/files?q=name='${FOLDER_NAME}' and mimeType='application/vnd.google-apps.folder' and trashed=false`, { headers:{ Authorization:`Bearer ${accessToken}` } });
   const data = await res.json();
   if (data.files && data.files.length > 0) {
     driveFolderId = data.files[0].id;
   } else {
-    const createRes = await fetch('https://www.googleapis.com/drive/v3/files', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        name: FOLDER_NAME,
-        mimeType: 'application/vnd.google-apps.folder',
-      }),
+    const r = await fetch('https://www.googleapis.com/drive/v3/files', {
+      method:'POST', headers:{ Authorization:`Bearer ${accessToken}`, 'Content-Type':'application/json' },
+      body: JSON.stringify({ name: FOLDER_NAME, mimeType:'application/vnd.google-apps.folder' })
     });
-    const folder = await createRes.json();
-    driveFolderId = folder.id;
+    driveFolderId = (await r.json()).id;
   }
 }
 
-// ── SAVE TO DRIVE ──
 async function saveToDrive() {
-  if (!accessToken) { showToast('Driveに接続されていません', 'error'); return; }
-
-  const caseData = cases[currentCaseIdx];
-  const fileName = `${caseData.id}_${caseData.moshitate}.json`;
-  const content = JSON.stringify({ ...caseData, savedAt: new Date().toISOString(), savedBy: currentUser.name }, null, 2);
-
+  if (!accessToken) { showToast('Driveに接続されていません','error'); return; }
+  const c = cases[currentCaseIdx];
+  const fileName = `${c.id}_${c.moshitate}.json`;
+  const content = JSON.stringify({ ...c, savedAt: new Date().toISOString(), savedBy: currentUser.name }, null, 2);
   showToast('Driveに保存中…');
-
   try {
-    // 既存ファイルを検索
-    const searchRes = await fetch(
-      `https://www.googleapis.com/drive/v3/files?q=name='${fileName}' and '${driveFolderId}' in parents and trashed=false`,
-      { headers: { Authorization: `Bearer ${accessToken}` } }
-    );
+    const searchRes = await fetch(`https://www.googleapis.com/drive/v3/files?q=name='${fileName}' and '${driveFolderId}' in parents and trashed=false`, { headers:{ Authorization:`Bearer ${accessToken}` } });
     const searchData = await searchRes.json();
-
     let res;
     if (searchData.files && searchData.files.length > 0) {
-      // 上書き更新
-      const fileId = searchData.files[0].id;
-      res = await fetch(`https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=media`, {
-        method: 'PATCH',
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          'Content-Type': 'application/json',
-        },
-        body: content,
+      res = await fetch(`https://www.googleapis.com/upload/drive/v3/files/${searchData.files[0].id}?uploadType=media`, {
+        method:'PATCH', headers:{ Authorization:`Bearer ${accessToken}`, 'Content-Type':'application/json' }, body: content
       });
     } else {
-      // 新規作成
-      const metadata = { name: fileName, parents: [driveFolderId] };
       const form = new FormData();
-      form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
-      form.append('file', new Blob([content], { type: 'application/json' }));
+      form.append('metadata', new Blob([JSON.stringify({ name: fileName, parents:[driveFolderId] })], { type:'application/json' }));
+      form.append('file', new Blob([content], { type:'application/json' }));
       res = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${accessToken}` },
-        body: form,
+        method:'POST', headers:{ Authorization:`Bearer ${accessToken}` }, body: form
       });
     }
+    if (res.ok) showToast(`✓ ${fileName} を保存しました`, 'success');
+    else showToast('保存に失敗しました','error');
+  } catch(e) { showToast('エラー: '+e.message,'error'); }
+}
 
-    if (res.ok) {
-      showToast(`✓ ${fileName} をDriveに保存しました`, 'success');
-    } else {
-      showToast('保存に失敗しました', 'error');
-    }
-  } catch (e) {
-    showToast('エラーが発生しました: ' + e.message, 'error');
+async function loadFromDrive() {
+  if (!accessToken) { showToast('Driveに接続されていません','error'); return; }
+  showToast('Driveから読み込み中…');
+  try {
+    const res = await fetch(`https://www.googleapis.com/drive/v3/files?q='${driveFolderId}' in parents and trashed=false&orderBy=modifiedTime desc`, { headers:{ Authorization:`Bearer ${accessToken}` } });
+    const data = await res.json();
+    if (!data.files || data.files.length === 0) { showToast('保存データがありません','error'); return; }
+    const latest = data.files[0];
+    const fileRes = await fetch(`https://www.googleapis.com/drive/v3/files/${latest.id}?alt=media`, { headers:{ Authorization:`Bearer ${accessToken}` } });
+    const caseData = await fileRes.json();
+    const idx = cases.findIndex(c => c.id === caseData.id);
+    if (idx >= 0) { cases[idx] = caseData; currentCaseIdx = idx; }
+    else { cases.push(caseData); currentCaseIdx = cases.length-1; }
+    currentStage = cases[currentCaseIdx].stage;
+    renderSidebar(); renderContent();
+    showToast(`✓ ${latest.name} を読み込みました`,'success');
+  } catch(e) { showToast('読み込みエラー: '+e.message,'error'); }
+}
+
+// ── DOCX 差し込み出力 ──
+function base64ToArrayBuffer(base64) {
+  const bin = atob(base64);
+  const buf = new ArrayBuffer(bin.length);
+  const view = new Uint8Array(buf);
+  for (let i = 0; i < bin.length; i++) view[i] = bin.charCodeAt(i);
+  return buf;
+}
+
+function downloadJuriDecision() {
+  const c = cases[currentCaseIdx];
+  try {
+    const arrayBuf = base64ToArrayBuffer(JURIDECISION_TEMPLATE_B64);
+    const zip = new PizZip(arrayBuf);
+    const doc = new docxtemplater(zip, { paragraphLoop: true, linebreaks: true });
+    doc.render({
+      発行日: c.juridecision_bi || today(),
+      宛名: c.moshitate,
+      事案名: c.jian_mei || c.gaiyou.slice(0,20),
+      申立人氏名: c.moshitate,
+      相手方氏名: c.aitegata,
+      受付日: c.uketsuke_bi || today(),
+      受理決定日: c.juridecision_bi || today(),
+      受理番号: c.id,
+    });
+    const out = doc.getZip().generate({ type:'blob', mimeType:'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
+    saveAs(out, `受理決定書_${c.id}.docx`);
+    showToast('受理決定書をダウンロードしました','success');
+  } catch(e) {
+    showToast('出力エラー: '+e.message,'error');
+    console.error(e);
   }
 }
 
-// ── LOAD FROM DRIVE ──
-async function loadFromDrive() {
-  if (!accessToken) { showToast('Driveに接続されていません', 'error'); return; }
-  if (!driveFolderId) { showToast('フォルダを確認中です…'); return; }
-
-  showToast('Driveから案件一覧を取得中…');
-
-  try {
-    const res = await fetch(
-      `https://www.googleapis.com/drive/v3/files?q='${driveFolderId}' in parents and trashed=false&orderBy=modifiedTime desc`,
-      { headers: { Authorization: `Bearer ${accessToken}` } }
-    );
-    const data = await res.json();
-
-    if (!data.files || data.files.length === 0) {
-      showToast('Driveに保存された案件がありません', 'error');
-      return;
-    }
-
-    // 最新ファイルを自動読み込み（簡易版）
-    const latest = data.files[0];
-    const fileRes = await fetch(
-      `https://www.googleapis.com/drive/v3/files/${latest.id}?alt=media`,
-      { headers: { Authorization: `Bearer ${accessToken}` } }
-    );
-    const caseData = await fileRes.json();
-
-    // 案件データを更新
-    const idx = cases.findIndex(c => c.id === caseData.id);
-    if (idx >= 0) {
-      cases[idx] = caseData;
-      currentCaseIdx = idx;
-      currentStage = caseData.stage;
-    } else {
-      cases.push(caseData);
-      currentCaseIdx = cases.length - 1;
-      currentStage = caseData.stage;
-    }
-
-    renderSidebar();
-    renderContent();
-    showToast(`✓ ${latest.name} を読み込みました`, 'success');
-  } catch (e) {
-    showToast('読み込みに失敗しました: ' + e.message, 'error');
-  }
+function today() {
+  const d = new Date();
+  return `令和${d.getFullYear()-2018}年${d.getMonth()+1}月${d.getDate()}日`;
 }
 
 // ── RENDER ──
 function renderSidebar() {
-  const stageClasses = ['受付','審査','期日','合意書','終了'];
-  document.getElementById('caseList').innerHTML = cases.map((c, i) => `
-    <div class="case-item ${i === currentCaseIdx ? 'active' : ''}" onclick="selectCase(${i})">
+  document.getElementById('caseList').innerHTML = cases.map((c,i) => `
+    <div class="case-item ${i===currentCaseIdx?'active':''}" onclick="selectCase(${i})">
       <div class="case-id">${c.id}</div>
       <div class="case-name">${c.moshitate} / ${c.aitegata}</div>
-      <span class="case-stage stage-${stageClasses[c.stage]}">${stageClasses[c.stage]}</span>
+      <span class="case-stage stage-${stageNames[c.stage]}">${stageNames[c.stage]}</span>
     </div>
   `).join('');
 }
@@ -990,79 +418,64 @@ function renderContent() {
 }
 
 function updateProgress() {
-  document.querySelectorAll('.progress-step').forEach((el, i) => {
-    el.classList.remove('done', 'active');
+  document.querySelectorAll('.progress-step').forEach((el,i) => {
+    el.classList.remove('done','active');
     const num = el.querySelector('.step-num');
     if (i < currentStage) { el.classList.add('done'); num.textContent = '✓'; }
-    else if (i === currentStage) { el.classList.add('active'); num.textContent = i + 1; }
-    else { num.textContent = i + 1; }
+    else if (i === currentStage) { el.classList.add('active'); num.textContent = i+1; }
+    else num.textContent = i+1;
   });
 }
 
 function setStage(i) { currentStage = i; renderContent(); }
-
-function selectCase(i) {
-  currentCaseIdx = i;
-  currentStage = cases[i].stage;
-  renderSidebar();
-  renderContent();
-}
+function selectCase(i) { currentCaseIdx = i; currentStage = cases[i].stage; renderSidebar(); renderContent(); }
 
 // ── STAGE RENDERS ──
-function renderDocPanel(stageIdx) {
-  const items = stageDocs[stageIdx].map(d => `
-    <div class="doc-item">
-      <div class="doc-info">
-        <div class="doc-name">${d.name}</div>
-        <div class="doc-desc">${d.desc}</div>
-      </div>
-      <div class="doc-actions">
-        <button class="btn-dl docx" onclick="showToast('${d.name}.docx をダウンロードします')">Word</button>
-        <button class="btn-dl pdf"  onclick="showToast('${d.name}.pdf をダウンロードします')">PDF</button>
-      </div>
-    </div>
-  `).join('');
-  return `<div class="doc-panel"><div class="doc-panel-title">このステージの書類</div><div class="doc-list">${items}</div></div>`;
-}
-
 function renderUketsuke() {
   const c = cases[currentCaseIdx];
   return `
     <div class="section-heading"><span>受付</span><span class="stage-badge">STAGE 01</span></div>
-    <div class="status-row"><div class="status-dot"></div>完了</div>
     <div class="form-grid">
-      <div class="form-group"><label>受付日</label><input type="date"></div>
+      <div class="form-group"><label>受付日</label><input type="date" id="f_uketsuke_bi" value="${c.uketsuke_bi||''}"></div>
       <div class="form-group"><label>案件番号</label><input type="text" value="${c.id}" readonly style="background:#f5f0e8;color:#888;"></div>
-      <div class="form-group"><label>申立人 氏名</label><input type="text" value="${c.moshitate}"></div>
-      <div class="form-group"><label>相手方 氏名</label><input type="text" value="${c.aitegata}"></div>
-      <div class="form-group full"><label>事件の概要</label><textarea>${c.gaiyou}</textarea></div>
+      <div class="form-group"><label>申立人 氏名</label><input type="text" id="f_moshitate" value="${c.moshitate}"></div>
+      <div class="form-group"><label>相手方 氏名</label><input type="text" id="f_aitegata" value="${c.aitegata}"></div>
+      <div class="form-group full"><label>事案名</label><input type="text" id="f_jian_mei" value="${c.jian_mei||''}"></div>
+      <div class="form-group full"><label>事件の概要</label><textarea id="f_gaiyou">${c.gaiyou}</textarea></div>
     </div>
-    ${renderDocPanel(0)}
+    <div class="doc-panel">
+      <div class="doc-panel-title">このステージの書類</div>
+      <div class="doc-list">
+        <div class="doc-item">
+          <div class="doc-info"><div class="doc-name">受理決定書</div><div class="doc-desc">申立人・相手方への通知</div></div>
+          <div class="doc-actions">
+            <button class="btn-dl docx" onclick="saveFormThenDownload()">Word DL</button>
+          </div>
+        </div>
+      </div>
+    </div>
     <div class="action-row">
-      <button class="btn-secondary">一時保存</button>
-      <button class="btn-drive-save" onclick="saveToDrive()">↑ Driveに保存</button>
-      <button class="btn-primary" onclick="showToast('審査ステージへ進みます')">審査へ →</button>
+      <button class="btn-secondary" onclick="saveForm()">保存</button>
+      <button class="btn-drive-save" onclick="saveForm();saveToDrive()">↑ Driveに保存</button>
+      <button class="btn-primary" onclick="saveForm();setStage(1)">審査へ →</button>
     </div>`;
 }
 
 function renderShinsa() {
+  const c = cases[currentCaseIdx];
   return `
     <div class="section-heading"><span>審査</span><span class="stage-badge">STAGE 02</span></div>
-    <div class="status-row"><div class="status-dot"></div>完了</div>
     <div class="form-grid">
-      <div class="form-group"><label>審査担当者</label><input type="text" value="${currentUser ? currentUser.name : ''}"></div>
-      <div class="form-group"><label>審査完了日</label><input type="date"></div>
-      <div class="form-group"><label>受理区分</label>
-        <select><option>受理</option><option>不受理</option><option>補正</option></select>
-      </div>
+      <div class="form-group"><label>審査担当者</label><input type="text" value="${currentUser?currentUser.name:''}"></div>
+      <div class="form-group"><label>受理決定日</label><input type="date" id="f_juridecision_bi" value="${c.juridecision_bi||''}"></div>
+      <div class="form-group"><label>受理区分</label><select><option>受理</option><option>不受理</option><option>補正</option></select></div>
       <div class="form-group"><label>調停人</label><input type="text"></div>
       <div class="form-group full"><label>審査コメント</label><textarea></textarea></div>
     </div>
-    ${renderDocPanel(1)}
     <div class="action-row">
-      <button class="btn-secondary">一時保存</button>
-      <button class="btn-drive-save" onclick="saveToDrive()">↑ Driveに保存</button>
-      <button class="btn-primary" onclick="showToast('期日ステージへ進みます')">期日へ →</button>
+      <button class="btn-secondary" onclick="saveForm()">保存</button>
+      <button class="btn-drive-save" onclick="saveForm();saveToDrive()">↑ Driveに保存</button>
+      <button class="btn-primary" onclick="saveForm();setStage(2)">期日へ →</button>
     </div>`;
 }
 
@@ -1080,11 +493,10 @@ function renderKijitsu() {
       </div>
     </div>
     <button class="add-kijitsu" onclick="addKijitsu()">＋ 期日を追加</button>
-    ${renderDocPanel(2)}
     <div class="action-row">
-      <button class="btn-secondary">一時保存</button>
+      <button class="btn-secondary">保存</button>
       <button class="btn-drive-save" onclick="saveToDrive()">↑ Driveに保存</button>
-      <button class="btn-primary" onclick="showToast('合意書作成へ進みます')">合意書作成へ →</button>
+      <button class="btn-primary" onclick="setStage(3)">合意書作成へ →</button>
     </div>`;
 }
 
@@ -1093,18 +505,15 @@ function renderGoui() {
     <div class="section-heading"><span>合意書作成</span><span class="stage-badge">STAGE 04</span></div>
     <div class="form-grid">
       <div class="form-group"><label>合意成立日</label><input type="date"></div>
-      <div class="form-group"><label>合意の種類</label>
-        <select><option>調停合意</option><option>和解</option><option>取下げ</option></select>
-      </div>
+      <div class="form-group"><label>合意の種類</label><select><option>調停合意</option><option>和解</option><option>取下げ</option></select></div>
       <div class="form-group full"><label>合意の内容</label><textarea style="min-height:120px;"></textarea></div>
       <div class="form-group"><label>申立人 署名日</label><input type="date"></div>
       <div class="form-group"><label>相手方 署名日</label><input type="date"></div>
     </div>
-    ${renderDocPanel(3)}
     <div class="action-row">
-      <button class="btn-secondary">一時保存</button>
+      <button class="btn-secondary">保存</button>
       <button class="btn-drive-save" onclick="saveToDrive()">↑ Driveに保存</button>
-      <button class="btn-primary" onclick="showToast('終了処理へ進みます')">終了処理へ →</button>
+      <button class="btn-primary" onclick="setStage(4)">終了処理へ →</button>
     </div>`;
 }
 
@@ -1113,20 +522,34 @@ function renderShuryo() {
     <div class="section-heading"><span>終了</span><span class="stage-badge">STAGE 05</span></div>
     <div class="form-grid">
       <div class="form-group"><label>終了日</label><input type="date"></div>
-      <div class="form-group"><label>終了区分</label>
-        <select><option>調停成立</option><option>調停不成立</option><option>取下げ</option><option>その他</option></select>
-      </div>
+      <div class="form-group"><label>終了区分</label><select><option>調停成立</option><option>調停不成立</option><option>取下げ</option><option>その他</option></select></div>
       <div class="form-group full"><label>備考・引継ぎ事項</label><textarea></textarea></div>
     </div>
-    ${renderDocPanel(4)}
     <div class="action-row">
-      <button class="btn-secondary">一時保存</button>
+      <button class="btn-secondary">保存</button>
       <button class="btn-drive-save" onclick="saveToDrive()">↑ Driveに保存</button>
-      <button class="btn-primary" onclick="showToast('案件を終了しました', 'success')">案件を終了する</button>
+      <button class="btn-primary" onclick="showToast('案件を終了しました','success')">案件を終了する</button>
     </div>`;
 }
 
-let kijitsuCount = 1;
+function saveForm() {
+  const c = cases[currentCaseIdx];
+  if (document.getElementById('f_uketsuke_bi')) c.uketsuke_bi = document.getElementById('f_uketsuke_bi').value;
+  if (document.getElementById('f_moshitate'))   c.moshitate   = document.getElementById('f_moshitate').value;
+  if (document.getElementById('f_aitegata'))    c.aitegata    = document.getElementById('f_aitegata').value;
+  if (document.getElementById('f_jian_mei'))    c.jian_mei    = document.getElementById('f_jian_mei').value;
+  if (document.getElementById('f_gaiyou'))      c.gaiyou      = document.getElementById('f_gaiyou').value;
+  if (document.getElementById('f_juridecision_bi')) c.juridecision_bi = document.getElementById('f_juridecision_bi').value;
+  c.stage = currentStage;
+  renderSidebar();
+  showToast('保存しました');
+}
+
+function saveFormThenDownload() {
+  saveForm();
+  downloadJuriDecision();
+}
+
 function addKijitsu() {
   kijitsuCount++;
   const list = document.getElementById('kijitsuList');
@@ -1141,36 +564,40 @@ function addKijitsu() {
       <div class="form-group full"><label>協議内容・メモ</label><textarea style="min-height:60px;"></textarea></div>
     </div>`;
   list.appendChild(card);
-  showToast('第 ' + kijitsuCount + ' 回期日を追加しました');
 }
 
-function openNewCase() { document.getElementById('newCaseModal').classList.add('open'); }
-function closeModal()   { document.getElementById('newCaseModal').classList.remove('open'); }
+function openNewCase() {
+  const nextNum = String(cases.length + 1).padStart(3,'0');
+  document.getElementById('newCaseId').value = `R06-${nextNum}`;
+  document.getElementById('newMoshitate').value = '';
+  document.getElementById('newAitegata').value = '';
+  document.getElementById('newGaiyou').value = '';
+  document.getElementById('newCaseModal').classList.add('open');
+}
+function closeModal() { document.getElementById('newCaseModal').classList.remove('open'); }
 
 function createCase() {
-  const m = document.getElementById('newMoshitate').value;
-  const a = document.getElementById('newAitegata').value;
-  const g = document.getElementById('newGaiyou').value;
-  if (!m || !a) { showToast('申立人と相手方の氏名を入力してください', 'error'); return; }
-  const newId = `2024-00${cases.length + 1}`;
-  cases.push({ id: newId, moshitate: m, aitegata: a, stage: 0, gaiyou: g });
-  currentCaseIdx = cases.length - 1;
+  const m = document.getElementById('newMoshitate').value.trim();
+  const a = document.getElementById('newAitegata').value.trim();
+  const g = document.getElementById('newGaiyou').value.trim();
+  if (!m || !a) { showToast('申立人と相手方の氏名を入力してください','error'); return; }
+  const id = document.getElementById('newCaseId').value;
+  cases.push({ id, moshitate:m, aitegata:a, stage:0, gaiyou:g, uketsuke_bi:'', juridecision_bi:'', jian_mei:'' });
+  currentCaseIdx = cases.length-1;
   currentStage = 0;
   closeModal();
   renderSidebar();
   renderContent();
-  showToast(`案件 ${newId} を作成しました`, 'success');
+  showToast(`案件 ${id} を作成しました`,'success');
 }
 
-document.getElementById('newCaseModal').addEventListener('click', function(e) {
-  if (e.target === this) closeModal();
-});
+document.getElementById('newCaseModal').addEventListener('click', function(e){ if(e.target===this) closeModal(); });
 
 let toastTimer;
-function showToast(msg, type = '') {
+function showToast(msg, type='') {
   const t = document.getElementById('toast');
   t.textContent = msg;
-  t.className = 'toast show' + (type ? ' ' + type : '');
+  t.className = 'toast show' + (type ? ' '+type : '');
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
 }
