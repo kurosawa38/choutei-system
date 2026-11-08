@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>御見積書ツール</title>
+<meta name="theme-color" content="#1f3a4d">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="見積書">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,"Hiragino Sans","Yu Gothic",sans-serif;background:#f3f2ee;color:#222}
+header{background:#1f3a4d;color:#fff;padding:calc(10px + env(safe-area-inset-top)) 16px 10px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+header h1{font-size:17px;margin:0;flex:1}
+button{font:inherit;cursor:pointer;border:1px solid #1f3a4d;background:#fff;color:#1f3a4d;border-radius:6px;padding:7px 14px}
+button.primary{background:#e8a33d;border-color:#e8a33d;color:#222;font-weight:700}
+button.small{padding:3px 9px;font-size:13px}
+.layout{display:flex;gap:16px;padding:16px;align-items:flex-start}
+.editor{flex:0 0 440px;max-width:100%}
+.preview{flex:1;min-width:0}
+.card{background:#fff;border-radius:10px;padding:14px;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.card h2{font-size:14px;margin:0 0 10px;color:#1f3a4d}
+label{display:block;font-size:12px;color:#555;margin-bottom:8px}
+input,select,textarea{font:inherit;width:100%;padding:7px 8px;border:1px solid #bbb;border-radius:6px;background:#fff;margin-top:2px}
+input[type=checkbox]{width:auto;margin-right:6px}
+textarea{min-height:54px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:0 10px}
+.chk{display:flex;align-items:center;font-size:13px;color:#222;margin-bottom:8px}
+.row{border:1px solid #ddd;border-radius:8px;padding:10px;margin-bottom:10px;background:#fafaf8}
+.row .line{display:grid;grid-template-columns:repeat(3,1fr);gap:0 8px}
+.row .top{display:flex;gap:6px;align-items:flex-end;margin-bottom:8px}
+.row .top>*{margin:0}
+.rowtotal{font-size:12px;color:#555;text-align:right}
+.big{font-size:26px;font-weight:700;color:#1f3a4d;text-align:right}
+.mini{font-size:12px;color:#666;line-height:1.7}
+.note{font-size:12px;color:#777;line-height:1.6}
+#sheetWrap{position:relative;width:100%}
+#sheet{width:794px;transform-origin:top left;background:#fff;box-shadow:0 2px 10px rgba(0,0,0,.18);
+ padding:36px 42px 30px;font-family:"Yu Mincho","Hiragino Mincho ProN","MS PMincho",serif;color:#111;font-size:13px}
+.title{width:300px;margin:0 auto 16px;border:1px solid #111;border-radius:10px;text-align:center;font-size:26px;letter-spacing:.3em;padding:6px 0}
+.head{display:flex;justify-content:space-between;align-items:flex-start}
+.to{font-size:19px;padding-top:12px;min-height:34px}
+.from{font-size:12.5px;line-height:1.5;text-align:left;min-width:300px}
+.from .reg{font-size:11px}
+.from .nm{font-size:17px;letter-spacing:.15em}
+.msg{margin:6px 0 8px}
+table{border-collapse:collapse;width:100%}
+td,th{border:1px solid #111;padding:0 6px;height:22px;font-weight:400;font-size:13px}
+.sum{margin-bottom:10px}
+.sum th{text-align:center;letter-spacing:.4em;height:24px}
+.sum td{height:34px;font-size:15px}
+.sum td b{font-size:19px;font-weight:400;float:right;margin-right:6px}
+.block{display:flex}
+.side{writing-mode:vertical-rl;text-orientation:upright;border:1px solid #111;border-right:0;width:24px;text-align:center;font-size:11.5px;letter-spacing:.05em;padding:2px 0}
+.block .tbl{flex:1}
+.items th{text-align:center;letter-spacing:.5em}
+.items td.n{text-align:right}
+.items td.c{text-align:center;padding:0}
+.items tr.sub td{border-top:2px solid #111;height:26px}
+.items tr.sub td.lbl{text-align:center;letter-spacing:.15em}
+.lower{display:flex;margin-top:0}
+.lower .l{flex:1.5}
+.lower .r{flex:1}
+.lower .r table td{text-align:center;height:24px}
+.tot td.lbl{padding-left:10px;font-size:12px;white-space:nowrap}
+.tot td.n{text-align:right}
+.tot{border:2px solid #111}
+.tot td{border-width:1px}
+.maebox td{height:26px}
+.bikou{display:flex;border:1px solid #111;margin-top:0;min-height:56px}
+.bikou .k{writing-mode:vertical-rl;text-orientation:upright;width:24px;text-align:center;border-right:1px solid #111;padding:2px 0;letter-spacing:.8em}
+.bikou .v{flex:1;padding:4px 8px;white-space:pre-wrap;font-size:13px}
+.foot{font-size:12px;line-height:1.7;margin-top:8px}
+@media (max-width:900px){.layout{flex-direction:column}.editor{flex:none;width:100%}.preview{width:100%}}
+@media print{
+ @page{size:A4;margin:0}
+ body{background:#fff}
+ header,.editor,.nopr{display:none!important}
+ .layout{display:block;padding:0}
+ #sheetWrap{height:auto!important}
+ #sheet{transform:none!important;box-shadow:none}
+}
+</style>
+</head>
+<body>
+<header>
+ <h1>御見積書ツール</h1>
+ <button id="btnNew">新規</button>
+ <button id="btnPrint" class="primary">印刷 / PDF保存</button>
+</header>
+
+<div class="layout">
+ <div class="editor">
+  <div class="card">
+   <h2>基本情報</h2>
+   <label>宛名（「様」は自動）<input id="addr" placeholder="例：山田 太郎"></label>
+   <div class="grid2">
+    <label>発行日<input id="date" type="date"></label>
+    <label>処理番号<input id="no" placeholder="01164"></label>
+    <label>消費税率
+      <select id="taxRate"><option value="10">10%</option><option value="8">8%（旧書式）</option></select></label>
+    <label>その他の費用（③・実費）<input id="other" type="number" inputmode="numeric" placeholder="0"></label>
+   </div>
+   <div class="chk"><input type="checkbox" id="withhold"><span>源泉徴収あり（法人・事業者宛）</span></div>
+   <label>備考<textarea id="memo"></textarea></label>
+  </div>
+
+  <div class="card">
+   <h2>手続の代理・書類の作成等</h2>
+   <div id="rows"></div>
+   <button id="btnAdd">＋ 行を追加</button>
+  </div>
+
+  <div class="card">
+   <h2>調整額（端数調整）</h2>
+   <label>調整の方法
+     <select id="adjMode">
+       <option value="auto">自動：差引受領額を100円単位に切り捨て</option>
+       <option value="target">合計金額を指定して逆算</option>
+       <option value="manual">調整額を手入力</option>
+     </select></label>
+   <label id="adjTargetWrap" style="display:none">希望の差引受領額（円）<input id="adjTarget" type="number" inputmode="numeric" placeholder="200000"></label>
+   <label id="adjManualWrap" style="display:none">調整額（マイナス可）<input id="adjManual" type="number" inputmode="numeric" placeholder="-58"></label>
+   <div class="mini" id="adjMsg"></div>
+  </div>
+
+  <div class="card">
+   <h2>差引受領額</h2>
+   <div class="big" id="grandBig">0 円</div>
+   <div class="mini" id="calcMini"></div>
+  </div>
+  <p class="note nopr">※ 種別ごとの報酬額・登録免許税率は、お持ちの見積書（2024〜2025年分）から初期値を入れています。行ごとに自由に書き換えられます。登録免許税は、課税標準額（評価額・債権額）から「1,000円未満切捨→税率→100円未満切捨（最低1,000円）」で自動計算し、直接入力で上書きもできます（軽減税率などはこちらで調整）。</p>
+ </div>
+
+ <div class="preview">
+  <div id="sheetWrap"><div id="sheet"></div></div>
+ </div>
+</div>
+
+<script>
+// ===== 事業者情報（変更はここ） =====
+const ISSUER = {
+  regno: 'T4810631178318',
+  zip: '〒310-0845',
+  addr: '水戸市吉沢町715番地の1',
+  name: '司法書士 黒 澤　竜 太',
+  tel: '029-212-3138',
+  fax: '029-212-3139',
+  bank: ['常陽銀行　吉田支店', '普通預金　1437719　黒澤竜太（クロサワリョウタ）']
+};
+
+// ===== 種別プリセット =====
+const PRESETS = [
+ {g:'登記（報酬＋登録免許税）', items:[
+  {name:'所有権移転（売買）', label:'所有権移転（売買）土地 1.5%', unit:50000, kind:'rate', rate:1.5},
+  {name:'所有権移転（贈与）', unit:50000, kind:'rate', rate:2},
+  {name:'所有権移転（相続）', unit:45000, kind:'rate', rate:0.4},
+  {name:'所有権保存', unit:15000, kind:'rate', rate:0.4},
+  {name:'抵当権設定', unit:37000, kind:'rate', rate:0.4},
+  {name:'抵当権抹消', unit:13000, kind:'perItem', perUnit:1000},
+  {name:'所有権登記名義人表示変更', unit:9000, kind:'perItem', perUnit:1000},
+  {name:'所有権移転（売買）', label:'所有権移転（売買）建物 2%', unit:50000, kind:'rate', rate:2},
+ ]},
+ {g:'書類作成など（報酬のみ）', items:[
+  {name:'相続関係説明図', unit:4000, kind:'fixed'},
+  {name:'遺産分割協議書', unit:5000, kind:'fixed'},
+  {name:'売買契約書作成', unit:15000, kind:'fixed'},
+  {name:'本人確認情報作成', unit:50000, kind:'fixed'},
+  {name:'清算結了（法人）', unit:20000, kind:'fixed'},
+ ]},
+ {g:'取得費用（報酬欄・実費欄の両方に計上）', items:[
+  {name:'登記情報閲覧', unit:330, kind:'pass'},
+  {name:'登記事項証明書', unit:490, kind:'pass'},
+ ]},
+ {g:'その他', items:[{name:'', unit:0, kind:'fixed'}]},
+];
+const PRESET_FLAT = [];
+PRESETS.forEach((g,gi)=>g.items.forEach((it,ii)=>PRESET_FLAT.push({key:gi+'-'+ii, ...it})));
+
+// <calc>
+function rowAmounts(r){
+  const qty = +r.qty || 0, unit = +r.unit || 0;
+  const fee = unit * qty;
+  let lic;
+  if (r.kind === 'pass') lic = fee;
+  else if (r.licManual) lic = +r.lic || 0;
+  else if (r.kind === 'rate') {
+    const base = Math.floor((+r.base || 0) / 1000) * 1000;
+    const bp = Math.round((+r.rate || 0) * 100);
+    lic = Math.floor(Math.floor(base * bp / 10000) / 100) * 100;
+    if ((+r.base || 0) > 0 && lic < 1000) lic = 1000;
+  }
+  else if (r.kind === 'perItem') lic = (+r.base || 0) * (+r.perUnit || 0);
+  else lic = +r.lic || 0;
+  return {fee, lic};
+}
+function calc(rows, o){
+  let feeSum = 0, licSum = 0;
+  rows.forEach(r => { const a = rowAmounts(r); feeSum += a.fee; licSum += a.lic; });
+  const other = +o.other || 0;
+  const taxRate = +o.taxRate || 10;
+  const at = a => {
+    const s1 = feeSum + a;
+    const t = Math.floor(s1 * taxRate / 100);
+    const w = o.withhold ? Math.max(0, Math.floor((s1 - 10000) * 1021 / 10000)) : 0;
+    return {s1, t, w, grand: s1 + licSum + other + t - w};
+  };
+  let adj = 0, adjOk = true;
+  if (o.adjMode === 'auto') {
+    adjOk = false;
+    for (let a = 0; a >= -300; a--) { if (at(a).grand % 100 === 0) { adj = a; adjOk = true; break; } }
+  } else if (o.adjMode === 'target') {
+    adjOk = false;
+    const tg = +o.adjTarget;
+    if (tg > 0) for (let k = 0; k <= 20000; k++) {
+      if (at(-k).grand === tg) { adj = -k; adjOk = true; break; }
+      if (at(k).grand === tg) { adj = k; adjOk = true; break; }
+    }
+  } else adj = +o.adjManual || 0;
+  const r = at(adj);
+  return {adjOk, feeSum, licSum, other, adj, s1: r.s1, s2: licSum, s3: other, s4: r.s1 + licSum + other, s5: r.t, s6: r.w, grand: r.grand, taxRate};
+}
+// </calc>
+
+// ===== 状態 =====
+let rows = [];
+const $ = id => document.getElementById(id);
+const yen = n => (n < 0 ? '-' : '') + Math.abs(n).toLocaleString('ja-JP');
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+function newRow(presetKey){
+  const p = PRESET_FLAT.find(x => x.key === presetKey) || PRESET_FLAT[PRESET_FLAT.length-1];
+  return {preset: p.key, name: p.name, unit: p.unit, qty: 1, kind: p.kind, rate: p.rate ?? 0, perUnit: p.perUnit ?? 0, base: '', lic: 0, licManual: false};
+}
+function todayStr(){
+  const d = new Date(); const p = n => String(n).padStart(2,'0');
+  return d.getFullYear() + '-' + p(d.getMonth()+1) + '-' + p(d.getDate());
+}
+function nextNo(){
+  try {
+    const v = localStorage.getItem('mitsumori_last_no');
+    if (v && /^\d+$/.test(v)) return String(+v + 1).padStart(v.length, '0');
+  } catch(e){}
+  return '';
+}
+function saveNo(){
+  try { const v = $('no').value.trim(); if (/^\d+$/.test(v)) localStorage.setItem('mitsumori_last_no', v); } catch(e){}
+}
+function resetAll(){
+  $('addr').value = ''; $('date').value = todayStr(); $('no').value = nextNo();
+  $('taxRate').value = '10'; $('other').value = ''; $('withhold').checked = false; $('memo').value = '';
+  $('adjMode').value = 'auto'; $('adjManual').value = ''; $('adjTarget').value = '';
+  rows = [newRow('0-0'), newRow('2-0'), newRow('2-1')];
+  rows[0].base = '';
+  renderRows(); update();
+}
+
+// ===== 入力行 =====
+function presetOptions(sel){
+  let h = '<option value="">種別を選択…</option>';
+  PRESETS.forEach((g,gi) => {
+    h += `<optgroup label="${esc(g.g)}">`;
+    g.items.forEach((it,ii) => { const k = gi+'-'+ii; h += `<option value="${k}" ${k===sel?'selected':''}>${esc(it.label || it.name || '（自由入力）')}</option>`; });
+    h += '</optgroup>';
+  });
+  return h;
+}
+function renderRows(){
+  $('rows').innerHTML = rows.map((r,i) => {
+    const a = rowAmounts(r);
+    let extra = '';
+    if (r.kind === 'rate') extra = `
+      <label>課税標準額（評価額・債権額）<input data-f="base" type="number" inputmode="numeric" value="${esc(r.base)}"></label>
+      <label>税率(%)<input data-f="rate" type="number" step="0.1" value="${esc(r.rate)}"></label>
+      <label>登録免許税<input data-f="lic" type="number" inputmode="numeric" value="${a.lic}"></label>`;
+    else if (r.kind === 'perItem') extra = `
+      <label>不動産の個数<input data-f="base" type="number" inputmode="numeric" value="${esc(r.base)}"></label>
+      <label>1個あたり税額<input data-f="perUnit" type="number" inputmode="numeric" value="${esc(r.perUnit)}"></label>
+      <label>登録免許税<input data-f="lic" type="number" inputmode="numeric" value="${a.lic}"></label>`;
+    else if (r.kind === 'fixed') extra = `
+      <label>登録免許税等（実費）<input data-f="lic" type="number" inputmode="numeric" value="${r.lic||''}" placeholder="0"></label>`;
+    return `<div class="row" data-i="${i}">
+      <div class="top">
+        <select data-f="preset" style="flex:1">${presetOptions(r.preset)}</select>
+        <button class="small" data-act="del" title="削除">×</button>
+      </div>
+      <label>種別名（見積書に表示）<input data-f="name" value="${esc(r.name)}"></label>
+      <div class="line">
+        <label>${r.kind==='pass'?'1件あたり':'報酬額（税抜）'}<input data-f="unit" type="number" inputmode="numeric" value="${esc(r.unit)}"></label>
+        <label>件数<input data-f="qty" type="number" inputmode="numeric" value="${esc(r.qty)}"></label>
+        ${extra}
+      </div>
+      <div class="rowtotal" data-role="rt">報酬 ${yen(a.fee)} 円 ／ 実費等 ${yen(a.lic)} 円</div>
+    </div>`;
+  }).join('') || '<p class="note">行がありません。「＋ 行を追加」を押してください。</p>';
+}
+
+$('rows').addEventListener('input', e => {
+  const f = e.target.dataset.f; if (!f || f === 'preset') return;
+  const el = e.target.closest('.row'); const r = rows[+el.dataset.i];
+  r[f] = e.target.type === 'number' && f !== 'base' ? e.target.value : e.target.value;
+  if (f === 'lic') r.licManual = true;
+  const a = rowAmounts(r);
+  const licInput = el.querySelector('[data-f="lic"]');
+  if (licInput && f !== 'lic') licInput.value = a.lic;
+  el.querySelector('[data-role="rt"]').textContent = `報酬 ${yen(a.fee)} 円 ／ 実費等 ${yen(a.lic)} 円`;
+  update();
+});
+$('rows').addEventListener('change', e => {
+  if (e.target.dataset.f !== 'preset') return;
+  let i = +e.target.closest('.row').dataset.i;
+  if (!e.target.value) return;
+  const keepQty = rows[i].qty;
+  rows[i] = newRow(e.target.value); rows[i].qty = keepQty;
+  if (e.target.value === '0-2') {  // 相続：相続関係説明図・遺産分割協議書を既定で追加
+    ['1-0','1-1'].forEach(k => { if (!rows.some(r => r.preset === k)) rows.splice(++i, 0, newRow(k)); });
+  }
+  renderRows(); update();
+});
+$('rows').addEventListener('click', e => {
+  if (e.target.dataset.act === 'del') { rows.splice(+e.target.closest('.row').dataset.i, 1); renderRows(); update(); }
+});
+$('btnAdd').onclick = () => { rows.push(newRow('')); renderRows(); update(); };
+$('btnNew').onclick = () => { if (confirm('入力内容を消して新規作成しますか？')) resetAll(); };
+$('btnPrint').onclick = () => { saveNo(); window.print(); };
+['addr','date','no','taxRate','other','withhold','memo','adjMode','adjManual','adjTarget'].forEach(id => $(id).addEventListener('input', update));
+$('taxRate').addEventListener('change', update);
+
+// ===== プレビュー =====
+function currentOpts(){
+  return {taxRate: $('taxRate').value, withhold: $('withhold').checked, other: $('other').value, adjMode: $('adjMode').value, adjManual: $('adjManual').value, adjTarget: $('adjTarget').value};
+}
+function update(){
+  const o = currentOpts();
+  $('adjManualWrap').style.display = o.adjMode === 'manual' ? 'block' : 'none';
+  $('adjTargetWrap').style.display = o.adjMode === 'target' ? 'block' : 'none';
+  const c = calc(rows, o);
+  $('adjMsg').textContent = o.adjMode === 'target' && $('adjTarget').value && !c.adjOk ? '※ その金額にはぴったり合わせられません（別の金額をお試しください）' : (c.adj ? `調整額 ${yen(c.adj)} 円を報酬に加算しています` : '調整額なし');
+  $('grandBig').textContent = yen(c.grand) + ' 円';
+  $('calcMini').innerHTML = `①報酬計 ${yen(c.s1)}（調整額 ${yen(c.adj)} 込）／ ②実費 ${yen(c.s2)}${c.s3?` ／ ③その他 ${yen(c.s3)}`:''}<br>④合計 ${yen(c.s4)} ＋ ⑤消費税 ${yen(c.s5)} − ⑥源泉 ${yen(c.s6)}`;
+  $('sheet').innerHTML = sheetHTML(c);
+  fit();
+}
+function sheetHTML(c){
+  const o = currentOpts();
+  const d = $('date').value ? $('date').value.split('-') : ['','',''];
+  const dateStr = d[0] ? `${d[0]} 年 ${+d[1]} 月 ${+d[2]} 日` : '　　年　　月　　日';
+  let lines = rows.map(r => { const a = rowAmounts(r); return {name:r.name, qty:r.qty, fee:a.fee, lic:a.lic}; });
+  if (c.adj !== 0) lines.push({name:'調整額', qty:'', fee:c.adj, lic:0});
+  const PAD = 13;
+  while (lines.length < PAD) lines.push(null);
+  const itemRows = lines.map(l => l
+    ? `<tr><td>${esc(l.name)}</td><td class="c">${esc(l.qty)}</td><td class="n">${yen(l.fee)}</td><td class="n">${l.name==='調整額'?0:yen(l.lic)}</td></tr>`
+    : `<tr><td>&nbsp;</td><td></td><td></td><td></td></tr>`).join('');
+  const tr = c.taxRate;
+  return `
+  <div class="title">御見積書</div>
+  <div class="head">
+    <div class="to">${esc($('addr').value)}${$('addr').value ? ' 様' : '　　　　　様'}</div>
+    <div class="from">
+      <div class="reg">登録番号：${ISSUER.regno}</div>
+      <div>茨城司法書士会会員</div>
+      <div style="margin-top:6px">${ISSUER.zip}</div>
+      <div>${ISSUER.addr}</div>
+      <div class="nm">${ISSUER.name}</div>
+      <div style="letter-spacing:.12em">電　話：${ISSUER.tel}</div>
+      <div style="letter-spacing:.12em">ＦＡＸ：${ISSUER.fax}</div>
+    </div>
+  </div>
+  <div class="msg">下記の通り御見積り申し上げます。</div>
+  <table class="sum">
+    <tr><th>合計金額</th><th>発　行　日</th><th>処　理　番　号</th></tr>
+    <tr><td>金<span style="float:right;font-size:19px;margin-right:6px">${yen(c.grand)} <span style="font-size:14px;margin-left:10px">円</span></span></td><td style="text-align:center">${dateStr}</td><td style="text-align:center">${esc($('no').value)}</td></tr>
+  </table>
+  <div class="block">
+    <div class="side">手続の代理・書類の作成等</div>
+    <div class="tbl"><table class="items">
+      <tr><th>種　別</th><th style="width:44px;letter-spacing:0">件</th><th style="width:150px;letter-spacing:.1em">報酬額（税抜）</th><th style="width:190px;letter-spacing:.05em">登録免許税又は印紙税等</th></tr>
+      ${itemRows}
+      <tr class="sub"><td class="lbl">小　　計（①${tr}%対象）</td><td class="c"></td><td class="n">① ${yen(c.s1)}</td><td class="n">② ${yen(c.s2)}</td></tr>
+    </table></div>
+  </div>
+  <div class="lower">
+    <div class="l">
+      <div class="block">
+        <div class="side" style="height:auto">その他の費用</div>
+        <div class="tbl"><table class="items">
+          <tr><td colspan="2">&nbsp;</td></tr><tr><td colspan="2">&nbsp;</td></tr><tr><td colspan="2">&nbsp;</td></tr>
+          <tr><td style="text-align:center;letter-spacing:.5em;width:60%">小　　計</td><td class="n">③ ${c.s3 ? yen(c.s3) : ''}</td></tr>
+        </table></div>
+      </div>
+      <table class="tot">
+        <tr><td class="lbl" style="width:66%">合　　計　　額　①＋②＋③</td><td class="n">④ ${yen(c.s4)}</td></tr>
+        <tr><td class="lbl">消費税額（${tr}%）　①×${tr}/100</td><td class="n">⑤ ${yen(c.s5)}</td></tr>
+        <tr><td class="lbl">源泉所得税額　（①−10,000円）×10.21/100</td><td class="n">⑥ ${yen(c.s6)}</td></tr>
+        <tr><td class="lbl">差　引　受　領　額　④＋⑤−⑥</td><td class="n">${yen(c.grand)}</td></tr>
+      </table>
+    </div>
+    <div class="r">
+      <table style="margin-left:-1px"><tr><td style="letter-spacing:.4em">受託番号</td></tr><tr><td>〜</td></tr><tr><td style="letter-spacing:.4em">受 託 日</td></tr><tr><td>&nbsp;</td></tr>
+      <tr><td style="letter-spacing:.4em">事件番号</td></tr><tr><td>&nbsp;</td></tr><tr><td>&nbsp;</td></tr></table>
+    </div>
+  </div>
+  <table class="maebox" style="margin-top:14px;border:0"><tr style="border:0"><td style="border:0;border-bottom:1px solid #111;border-top:1px solid #111;border-left:1px solid #111">前受金の精算　預り日</td><td style="border:0;border-top:1px solid #111;border-bottom:1px solid #111;text-align:right">預り金額　　　　　　　円　差引金　　　　　　　円</td></tr></table>
+  <div class="bikou"><div class="k">備考</div><div class="v">${esc($('memo').value)}</div></div>
+  <div class="foot">
+    <div>（注）源泉所得税額は源泉課税額（報酬額①から10,000円を差し引いた額）の10.21/100です。</div>
+    <div>お振り込みは下記の口座にお願い致します。</div>
+    <div style="margin-left:8px">${ISSUER.bank[0]}<br>${ISSUER.bank[1]}</div>
+    <div>誠に恐れ入りますが振込手数料はお客様負担とさせて頂きます。</div>
+  </div>`;
+}
+function fit(){
+  const w = $('sheetWrap'), s = $('sheet');
+  const sc = Math.min(1, w.clientWidth / 794);
+  s.style.transform = `scale(${sc})`;
+  w.style.height = (s.offsetHeight * sc) + 'px';
+}
+window.addEventListener('resize', fit);
+resetAll();
+if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+}
+</script>
+</body>
+</html>
