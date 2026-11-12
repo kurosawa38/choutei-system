@@ -286,7 +286,9 @@ function getToken(scope, prompt) {
   });
 }
 function setToken(r) { S.token = r.access_token; S.tokenExp = Date.now() + (Number(r.expires_in) || 3600) * 1000; }
-async function ensureToken() { if (S.token && Date.now() < S.tokenExp - 60000) return; setToken(await getToken(S.scope, '')); }
+async function ensureToken() { if (S.token && Date.now() < S.tokenExp - 60000) return;
+  try { setToken(await getToken(S.scope, '')); }
+  catch (e) { const x = new Error('ログインの有効期限が切れました。もう一度「保存」を押すか、ページを再読み込みして再ログインしてください（' + (e.type || e.error || '') + '）'); x.status = 401; throw x; } }
 async function gfetch(url, opts = {}, retried = false) {
   await ensureToken();
   const res = await fetch(url, { ...opts, headers: { ...(opts.headers || {}), Authorization: 'Bearer ' + S.token } });
@@ -359,7 +361,7 @@ async function persist(opts = {}) {
   setSaveState('saving');
   saving = (async () => {
     try { const ok = await saveCase(c); if (ok) { S.dirty = false; setSaveState(); if (!opts.quiet) toast('保存しました', 'ok', 1800); } else setSaveState(); return ok; }
-    catch (e) { console.error(e); setSaveState(); toast('保存できませんでした。\nネットワークやログイン状態を確認して、もう一度「保存」を押してください。\n（' + (e.message || e) + '）', 'err', 7000); return false; }
+    catch (e) { console.error(e); setSaveState(); toast('保存できませんでした。\nネットワークやログイン状態を確認して、もう一度「保存」を押してください。\n（' + (e.message || e.error || e.type || JSON.stringify(e)) + '）', 'err', 7000); return false; }
     finally { saving = null; }
   })();
   return saving;
@@ -602,7 +604,7 @@ async function genDoc(key) {
   const c = cur(), d = DOCS[key]; if (!c || !d) return;
   const miss = d.need(c).filter(([, v]) => v === '' || v == null).map(([l]) => l);
   try { download(renderDocx(d.tpl, d.data(c)), d.name(c)); }
-  catch (e) { console.error(e, e.properties?.errors); toast('書類を作れませんでした。\n（' + (e.message || e) + '）', 'err', 7000); return; }
+  catch (e) { console.error(e, e.properties?.errors); toast('書類を作れませんでした。\n（' + (e.message || e.error || e.type || JSON.stringify(e)) + '）', 'err', 7000); return; }
   toast(miss.length ? `出力しました。\n空欄のままの項目：${miss.join('、')}` : '出力しました', miss.length ? 'warn' : 'ok', miss.length ? 6000 : 2200);
   await persist({ quiet: true, force: true });
 }
@@ -664,14 +666,14 @@ $('#newName').addEventListener('keydown', e => { if (e.key === 'Enter') $('#newO
 $('#btnReload').addEventListener('click', async () => {
   if (S.dirty && !confirm('保存していない変更は消えます。最新を読み込みますか？')) return;
   try { toast('読み込み中…'); S.dirty = false; await loadAll(); if (!cur()) S.cur = S.cases[0]?.uid || null; renderAll(); toast('最新の状態を読み込みました', 'ok'); }
-  catch (e) { console.error(e); toast('読み込めませんでした（' + (e.message || e) + '）', 'err'); }
+  catch (e) { console.error(e); toast('読み込めませんでした（' + (e.message || e.error || e.type || JSON.stringify(e)) + '）', 'err'); }
 });
 $('#btnSettings').addEventListener('click', () => { $('#setCho').value = S.settings.cho; $('#setJim').value = S.settings.jimucho; $('#setMem').value = (S.settings.members || []).join('\n'); openDlg($('#dlgSet')); });
 $('#setCancel').addEventListener('click', () => $('#dlgSet').close());
 $('#setOk').addEventListener('click', async () => {
   S.settings = { cho: $('#setCho').value.trim(), jimucho: $('#setJim').value.trim(), members: $('#setMem').value.split('\n').map(s => s.trim()).filter(Boolean) };
   try { const r = await putJson(SETTINGS_FILE, S.settings, S.settingsFileId); S.settingsFileId = r.id; applySettingsUI(); $('#dlgSet').close(); toast('設定を保存しました', 'ok'); if (cur()) renderStage(); }
-  catch (e) { console.error(e); toast('設定を保存できませんでした（' + (e.message || e) + '）', 'err'); }
+  catch (e) { console.error(e); toast('設定を保存できませんでした（' + (e.message || e.error || e.type || JSON.stringify(e)) + '）', 'err'); }
 });
 </script>
 </body>
