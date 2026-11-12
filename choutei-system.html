@@ -278,7 +278,9 @@ function prep(c, n) {
 }
 
 /* ============ Google 認証・Drive ============ */
-function getToken(scope, prompt) {
+async function waitGsi() { for (let i = 0; i < 40 && !window.google?.accounts?.oauth2; i++) await new Promise(r => setTimeout(r, 250)); }
+async function getToken(scope, prompt) {
+  await waitGsi();
   return new Promise((res, rej) => {
     if (!window.google?.accounts?.oauth2) return rej({ error: 'gsi_not_loaded' });
     const cl = google.accounts.oauth2.initTokenClient({ client_id: CLIENT_ID, scope, callback: r => r.error ? rej(r) : res(r), error_callback: e => rej(e) });
@@ -389,7 +391,7 @@ async function login(limited) {
     else if (e.error === 'access_denied') msg.textContent = '許可されませんでした。\nテストユーザーとして登録されているアカウントか確認してください。';
     else if (e.error === 'scope_not_granted') msg.textContent = 'Googleドライブへのアクセスにチェックを入れて許可してください。\n（チェックがないと案件を保存できません）';
     else if (e.error === 'invalid_scope' || e.error === 'invalid_request') { msg.textContent = 'ドライブ全体へのアクセス設定が未完了です。\n共有制限モードでは、自分が作成した案件しか見えません。'; $('#btnLoginLimited').hidden = false; }
-    else if (e.error === 'gsi_not_loaded') msg.textContent = 'Googleのログイン部品を読み込めませんでした。ページを再読み込みしてください。';
+    else if (e.error === 'gsi_not_loaded') msg.textContent = 'Googleのログイン部品を読み込めませんでした。\nページを再読み込み（Ctrl+Shift+R）してください。\n直らない場合は、広告ブロック拡張機能をこのサイトだけ無効にするか、ネット接続を確認してください。';
     else msg.textContent = 'ログインできませんでした。\n' + (e.message || e.error || '') + (e.status === 403 ? '\n（Drive APIが有効か、権限が許可されているか確認してください）' : '');
   } finally { btns.forEach(b => b.disabled = false); }
 }
